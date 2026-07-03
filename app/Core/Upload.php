@@ -152,8 +152,7 @@ class Upload
             return basename($sourcePath);
         }
 
-        // Photos need EXIF orientation; signatures often already correct in pixel data
-        // and EXIF/auto-rotate was flipping them upside down.
+        // Signature: do not apply EXIF/auto-rotate — phone photos were flipping upside down
         if ($prefix !== 'signature') {
             $image = self::applyExifOrientation($image, $sourcePath, $ext);
         }
@@ -247,7 +246,8 @@ class Upload
     }
 
     /**
-     * Scale signature to a clear print size without rotating (avoids upside-down images).
+     * Normalize signature images: scale to print size without rotating
+     * (auto-rotate was flipping some phone photos upside down).
      * @param \GdImage|resource $image
      * @return \GdImage|resource
      */
@@ -259,10 +259,12 @@ class Upload
             return $image;
         }
 
-        // Wide canvas so signature stays readable on admission form
-        $outW = 700;
-        $outH = 220;
-        $ratio = min($outW / $width, $outH / $height);
+        // Landscape canvas for signature strip on print form
+        $outW = 600;
+        $outH = 200;
+
+        // If portrait, fit within canvas without rotating (keeps correct orientation)
+        $ratio = min($outW / max(1, $width), $outH / max(1, $height));
         $newW = max(1, (int) round($width * $ratio));
         $newH = max(1, (int) round($height * $ratio));
 
