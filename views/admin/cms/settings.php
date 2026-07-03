@@ -16,16 +16,16 @@
   $smsStatus = class_exists(\App\Core\Sms::class) ? \App\Core\Sms::statusLabel() : 'Not configured';
   ?>
 
-  <div id="sms-settings" style="scroll-margin-top:80px;padding:1rem;margin:0 0 1.5rem;border:2px solid #7c3aed;border-radius:10px;background:#f5f3ff">
-    <h3 style="margin:0 0 0.35rem;color:#5b21b6">
-      <span class="material-symbols-outlined" style="vertical-align:middle;font-size:22px">sms</span>
+  <div id="sms-settings" class="admin-sms-panel">
+    <h3 class="admin-sms-panel-title">
+      <span class="material-symbols-outlined">sms</span>
       SMS Notification (Student Mobile)
     </h3>
-    <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">
+    <p class="admin-sms-panel-desc">
       Har student ke mobile number par fee reminder / notification bhejne ke liye SMS gateway configure karein.
       India mein DLT-approved sender ID aur template use karna zaroori ho sakta hai.
     </p>
-    <div class="admin-alert <?= $smsOn ? 'admin-alert-success' : '' ?>" style="margin-bottom:1rem">
+    <div class="admin-alert admin-sms-status <?= $smsOn ? 'admin-alert-success' : 'admin-alert-muted' ?>">
       SMS status: <strong><?= e($smsStatus) ?></strong>
       <?php if ($smsOn): ?>
       — Fee Reminders panel se student numbers par SMS bhej sakte hain.
@@ -68,7 +68,7 @@
       <div style="grid-column:1/-1">
         <label>Custom API URL (only if provider = Custom)</label>
         <input name="settings[sms_custom_url]" value="<?= e($settings['sms_custom_url'] ?? '') ?>" placeholder="https://api.example.com/send?to={mobile91}&amp;text={message_encoded}&amp;key={api_key}">
-        <small style="display:block;margin-top:0.35rem;color:var(--admin-on-surface-variant)">
+        <small class="admin-sms-help">
           Placeholders: <code>{mobile}</code>, <code>{mobile91}</code>, <code>{message}</code>, <code>{message_encoded}</code>, <code>{api_key}</code>, <code>{sender_id}</code>
         </small>
       </div>
@@ -80,15 +80,15 @@
         </select>
       </div>
     </div>
-    <div style="margin-top:1rem">
+    <div class="admin-sms-template">
       <label>Default Fee Reminder SMS Template</label>
       <textarea name="settings[fee_reminder_sms_message]" rows="3" placeholder="Dear {name}, fee due {due} for {trade} at {institute}. Please pay soon. Call {phone}"><?= e($settings['fee_reminder_sms_message'] ?? 'Dear {name}, fee due {due} for {trade} at {institute}. Please pay soon. Call {phone}') ?></textarea>
-      <small style="display:block;margin-top:0.35rem;color:var(--admin-on-surface-variant)">
+      <small class="admin-sms-help">
         Variables: <code>{name}</code>, <code>{due}</code>, <code>{trade}</code>, <code>{institute}</code>, <code>{phone}</code>, <code>{mobile}</code>.
         Fast2SMS DLT mode mein variables auto: <code>name|due|trade|institute|phone</code>
       </small>
     </div>
-    <p style="margin:0.75rem 0 0;font-size:0.85rem;color:var(--admin-on-surface-variant)">
+    <p class="admin-sms-footer-note">
       SMS bhejne ke liye <a href="<?= site_url('admin/fee-reminders') ?>">Fee Reminders</a> panel use karein — channel SMS / Email / Both select karke students ke number par notification jayegi.
     </p>
   </div>

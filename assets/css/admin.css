@@ -1174,3 +1174,173 @@ html[data-admin-theme="dark"] .admin-notif-panel {
 html[data-admin-theme="dark"] .admin-notif-item:hover {
   background: #1a222d !important;
 }
+
+/* ---- SMS settings panel (light + dark) ---- */
+.admin-sms-panel {
+  scroll-margin-top: 80px;
+  padding: 1rem 1.1rem 1.15rem;
+  margin: 0 0 1.5rem;
+  border: 2px solid #7c3aed;
+  border-radius: 10px;
+  background: #f5f3ff;
+  color: #1e1b4b;
+}
+
+.admin-sms-panel-title {
+  margin: 0 0 0.35rem;
+  color: #5b21b6;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.05rem;
+}
+
+.admin-sms-panel-title .material-symbols-outlined {
+  font-size: 22px;
+  vertical-align: middle;
+}
+
+.admin-sms-panel-desc,
+.admin-sms-help,
+.admin-sms-footer-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #5b4b7a;
+  line-height: 1.45;
+}
+
+.admin-sms-help {
+  display: block;
+  margin-top: 0.35rem;
+  margin-bottom: 0;
+}
+
+.admin-sms-footer-note {
+  margin: 0.75rem 0 0;
+}
+
+.admin-sms-panel label {
+  color: #312e81;
+  font-weight: 600;
+}
+
+.admin-sms-panel input,
+.admin-sms-panel select,
+.admin-sms-panel textarea {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #c4b5fd;
+}
+
+.admin-sms-panel input::placeholder,
+.admin-sms-panel textarea::placeholder {
+  color: #94a3b8;
+}
+
+.admin-sms-panel code {
+  background: #ede9fe;
+  color: #5b21b6;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.8em;
+}
+
+.admin-sms-panel a {
+  color: #6d28d9;
+  font-weight: 700;
+}
+
+.admin-sms-template {
+  margin-top: 1rem;
+}
+
+.admin-alert-muted {
+  background: #ede9fe;
+  color: #4c1d95;
+  border-color: #c4b5fd;
+}
+
+.admin-sms-status {
+  margin-bottom: 1rem;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel {
+  background: #1a1530;
+  border-color: #8b5cf6;
+  color: #e8eaed;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel-title {
+  color: #c4b5fd;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel-desc,
+html[data-admin-theme="dark"] .admin-sms-help,
+html[data-admin-theme="dark"] .admin-sms-footer-note {
+  color: #b8b0d4;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel label {
+  color: #e9e5ff;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel input,
+html[data-admin-theme="dark"] .admin-sms-panel select,
+html[data-admin-theme="dark"] .admin-sms-panel textarea {
+  background-color: #121820 !important;
+  color: #e8eaed !important;
+  border-color: #4c3d7a !important;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel input::placeholder,
+html[data-admin-theme="dark"] .admin-sms-panel textarea::placeholder {
+  color: #8b93a0;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel code {
+  background: #2a2150;
+  color: #ddd6fe;
+}
+
+html[data-admin-theme="dark"] .admin-sms-panel a {
+  color: #c4b5fd;
+}
+
+html[data-admin-theme="dark"] .admin-alert-muted {
+  background: #2a2150;
+  color: #ddd6fe;
+  border-color: #6d28d9;
+}
+
+html[data-admin-theme="dark"] .admin-alert-success {
+  border-color: #166534;
+}
+
+/* Dark mode: labels & help text across admin forms */
+html[data-admin-theme="dark"] .admin-content label {
+  color: #e8eaed;
+}
+
+html[data-admin-theme="dark"] .admin-content h3 {
+  color: #f1f5f9;
+}
+
+html[data-admin-theme="dark"] .admin-content small,
+html[data-admin-theme="dark"] .admin-content .admin-help {
+  color: #9aa0a6;
+}
+
+html[data-admin-theme="dark"] .admin-content code {
+  background: #1a222d;
+  color: #cbd5e1;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+html[data-admin-theme="dark"] .admin-content a {
+  color: #93c5fd;
+}
+
+html[data-admin-theme="dark"] .admin-page-header p {
+  color: #9aa0a6 !important;
+}
