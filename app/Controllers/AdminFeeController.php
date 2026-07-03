@@ -272,4 +272,222 @@ class AdminFeeController
         }
         View::render('print/fee-receipt', ['fee' => $fee, 'title' => 'Fee Receipt'], 'print');
     }
+
+    public static function dueNotifyForm(): void
+    {
+        Auth::require();
+        View::render('admin/fees/due-notify', [
+            'title' => 'Fee Due Email Notifications',
+            'students' => self::dueStudentsWithEmail(),
+        ], 'admin');
+    }
+
+    public static function dueNotifySend(): void
+    {
+        Auth::require();
+        verify_csrf();
+
+        $keys = $_POST['students'] ?? [];
+        if (!is_array($keys) || $keys === []) {
+            flash('error', 'Select at least one student with fee due.');
+            redirect('admin/fees/due-notify');
+        }
+
+        $all = self::dueStudentsWithEmail();
+        $byKey = [];
+        foreach ($all as $row) {
+            $byKey[$row['key']] = $row;
+        }
+
+        $sent = 0;
+        $failed = 0;
+        $skipped = 0;
+        $institute = \App\Models\SiteData::header();
+        $instituteName = $institute['logo_text'] ?? config('site_name', 'Maner Private ITI');
+        if ($instituteName === 'Maner Pvt ITI') {
+            $instituteName = 'Maner Private ITI';
+        }
+        $phone = $institute['phone'] ?? '';
+        $officeEmail = $institute['email'] ?? '';
+
+        foreach ($keys as $key) {
+            $key = (string) $key;
+            if (!isset($byKey[$key])) {
+                $skipped++;
+                continue;
+            }
+            $row = $byKey[$key];
+            $ok = self::sendDueEmail($row, $instituteName, $phone, $officeEmail);
+            if ($ok) {
+                $sent++;
+            } else {
+                $failed++;
+            }
+        }
+
+        if ($sent > 0) {
+            flash('success', "Fee due notification sent to {$sent} student(s)." . ($failed ? " Failed: {$failed}." : ''));
+        } else {
+            flash('error', 'No emails sent. Check student email addresses and server mail settings.');
+        }
+        redirect('admin/fees/due-notify');
+    }
+
+    /** @return list<array<string,mixed>> */
+    private static function dueStudentsWithEmail(): array
+    {
+        $fees = Database::fetchAll(
+            'SELECT * FROM student_fees WHERE paid_amount < amount ORDER BY student_name, created_at DESC'
+        );
+
+        $grouped = [];
+        foreach ($fees as $fee) {
+            $due = max(0, (float) $fee['amount'] - (float) $fee['paid_amount']);
+            if ($due <= 0) {
+                continue;
+            }
+
+            $email = self::resolveStudentEmail($fee);
+            if ($email === '') {
+                continue;
+            }
+
+            $key = md5(strtolower($email) . '|' . strtolower(trim($fee['student_name'] ?? '')) . '|' . preg_replace('/\D/', '', (string) ($fee['mobile'] ?? '')));
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'key' => $key,
+                    'email' => $email,
+                    'student_name' => $fee['student_name'] ?? '',
+                    'mobile' => $fee['mobile'] ?? '',
+                    'trade' => $fee['trade'] ?? '',
+                    'total_due' => 0.0,
+                    'fee_count' => 0,
+                    'items' => [],
+                ];
+            }
+
+            $grouped[$key]['total_due'] += $due;
+            $grouped[$key]['fee_count']++;
+            $grouped[$key]['items'][] = [
+                'fee_type' => $fee['fee_type'] ?? 'Fee',
+                'due' => $due,
+                'due_date' => $fee['due_date'] ?? null,
+            ];
+            if (($grouped[$key]['trade'] ?? '') === '' && !empty($fee['trade'])) {
+                $grouped[$key]['trade'] = $fee['trade'];
+            }
+        }
+
+        $list = array_values($grouped);
+        usort($list, static fn($a, $b) => strcasecmp($a['student_name'], $b['student_name']));
+        return $list;
+    }
+
+    private static function resolveStudentEmail(array $fee): string
+    {
+        $admissionId = (int) ($fee['admission_id'] ?? 0);
+        if ($admissionId > 0) {
+            $row = Database::fetch('SELECT email FROM admissions WHERE id = ?', [$admissionId]);
+            $email = strtolower(trim((string) ($row['email'] ?? '')));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+            $student = Database::fetch('SELECT email FROM students WHERE admission_id = ?', [$admissionId]);
+            $email = strtolower(trim((string) ($student['email'] ?? '')));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+        }
+
+        $name = trim((string) ($fee['student_name'] ?? ''));
+        $mobile = preg_replace('/\D/', '', (string) ($fee['mobile'] ?? ''));
+
+        if ($mobile !== '') {
+            $student = Database::fetch(
+                'SELECT email FROM students WHERE REPLACE(REPLACE(REPLACE(mobile, " ", ""), "-", ""), "+", "") LIKE ? ORDER BY id DESC LIMIT 1',
+                ['%' . $mobile]
+            );
+            $email = strtolower(trim((string) ($student['email'] ?? '')));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+
+            $admission = Database::fetch(
+                'SELECT email FROM admissions WHERE REPLACE(REPLACE(REPLACE(mobile, " ", ""), "-", ""), "+", "") LIKE ? ORDER BY id DESC LIMIT 1',
+                ['%' . $mobile]
+            );
+            $email = strtolower(trim((string) ($admission['email'] ?? '')));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+        }
+
+        if ($name !== '') {
+            $student = Database::fetch(
+                'SELECT email FROM students WHERE LOWER(student_name) = LOWER(?) AND email IS NOT NULL AND email != "" ORDER BY id DESC LIMIT 1',
+                [$name]
+            );
+            $email = strtolower(trim((string) ($student['email'] ?? '')));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+
+            $admission = Database::fetch(
+                'SELECT email FROM admissions WHERE LOWER(name) = LOWER(?) AND email IS NOT NULL AND email != "" ORDER BY id DESC LIMIT 1',
+                [$name]
+            );
+            $email = strtolower(trim((string) ($admission['email'] ?? '')));
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $email;
+            }
+        }
+
+        return '';
+    }
+
+    private static function sendDueEmail(array $row, string $instituteName, string $phone, string $officeEmail): bool
+    {
+        $name = $row['student_name'] ?: 'Student';
+        $due = format_inr($row['total_due'] ?? 0);
+        $trade = $row['trade'] ?: '—';
+        $lines = '';
+        foreach ($row['items'] as $item) {
+            $dueDate = !empty($item['due_date']) ? format_date($item['due_date']) : '—';
+            $lines .= '<tr><td style="padding:8px;border:1px solid #ddd">' . e($item['fee_type']) . '</td>'
+                . '<td style="padding:8px;border:1px solid #ddd">' . e(format_inr($item['due'])) . '</td>'
+                . '<td style="padding:8px;border:1px solid #ddd">' . e($dueDate) . '</td></tr>';
+        }
+
+        $subject = 'Fee Due Reminder - ' . $instituteName;
+        $html = '
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#191c1e">
+          <div style="background:#131b2e;color:#fff;padding:16px 20px">
+            <h2 style="margin:0">' . e($instituteName) . '</h2>
+            <p style="margin:6px 0 0;color:#fea619;font-size:13px">Fee Due Notification</p>
+          </div>
+          <div style="padding:20px;border:1px solid #e0e3e5;border-top:0">
+            <p>Dear <strong>' . e($name) . '</strong>,</p>
+            <p>This is a reminder that you have pending fee dues at ' . e($instituteName) . '.</p>
+            <p><strong>Trade:</strong> ' . e($trade) . '<br>
+            <strong>Total Due Amount:</strong> <span style="color:#ba1a1a;font-size:18px;font-weight:bold">' . e($due) . '</span></p>
+            <table style="width:100%;border-collapse:collapse;margin:16px 0">
+              <thead>
+                <tr style="background:#f2f4f6">
+                  <th style="padding:8px;border:1px solid #ddd;text-align:left">Fee Type</th>
+                  <th style="padding:8px;border:1px solid #ddd;text-align:left">Due Amount</th>
+                  <th style="padding:8px;border:1px solid #ddd;text-align:left">Due Date</th>
+                </tr>
+              </thead>
+              <tbody>' . $lines . '</tbody>
+            </table>
+            <p>Please clear your dues at the earliest. For any query, contact the institute office'
+            . ($phone ? ' at <strong>' . e(format_mobile($phone)) . '</strong>' : '')
+            . ($officeEmail ? ' or email <strong>' . e($officeEmail) . '</strong>' : '')
+            . '.</p>
+            <p style="margin-top:24px">Regards,<br><strong>' . e($instituteName) . '</strong></p>
+          </div>
+        </div>';
+
+        return \App\Core\Mail::send($row['email'], $subject, $html);
+    }
 }

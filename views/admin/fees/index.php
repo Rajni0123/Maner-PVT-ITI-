@@ -1,6 +1,7 @@
 <div class="admin-page-header">
   <h1>Fee Management</h1>
-  <div class="admin-page-actions">
+  <div class="admin-page-actions" style="display:flex;gap:0.5rem;flex-wrap:wrap">
+    <a href="<?= site_url('admin/fees/due-notify') ?>" class="btn btn-outline btn-sm">Email Due Students</a>
     <a href="<?= site_url('admin/fees/collect') ?>" class="btn btn-primary btn-sm">+ Collect Fee</a>
   </div>
 </div>

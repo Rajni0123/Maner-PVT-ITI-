@@ -5,6 +5,7 @@ require_once __DIR__ . '/app/Core/Database.php';
 require_once __DIR__ . '/app/Core/Auth.php';
 require_once __DIR__ . '/app/Core/View.php';
 require_once __DIR__ . '/app/Core/Upload.php';
+require_once __DIR__ . '/app/Core/Mail.php';
 require_once __DIR__ . '/app/Core/Router.php';
 
 // Controllers (explicit load — reliable on all shared hosts)

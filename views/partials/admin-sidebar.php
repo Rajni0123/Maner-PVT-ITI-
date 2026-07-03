@@ -14,7 +14,7 @@ $navItems = [
     ['url' => 'admin/students', 'icon' => 'school', 'label' => 'Students'],
     ['url' => 'admin/contacts', 'icon' => 'contact_support', 'label' => 'Inquiries'],
     ['url' => 'admin/newsletter', 'icon' => 'mail', 'label' => 'Newsletter'],
-    ['url' => 'admin/fees', 'icon' => 'payments', 'label' => 'Fee Tracker'],
+    ['url' => 'admin/fees', 'icon' => 'payments', 'label' => 'Fee Tracker', 'match' => 'admin/fees'],
     ['url' => 'admin/staff/salary', 'icon' => 'receipt_long', 'label' => 'Staff Salary', 'match' => 'admin/staff'],
     ['url' => 'admin/finance', 'icon' => 'account_balance', 'label' => 'Finance Reports'],
 ];
