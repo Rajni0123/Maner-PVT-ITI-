@@ -23,9 +23,17 @@
         <option value="Other">Other</option>
       </select>
     </div>
-    <div><label>Mobile *</label><input name="mobile" maxlength="10" pattern="\d{10}" required></div>
+    <div>
+      <label>Mobile *</label>
+      <input name="mobile" id="mobile" type="tel" inputmode="numeric" maxlength="10" pattern="\d{10}" required placeholder="10-digit mobile">
+      <small id="mobile-msg" class="field-msg" style="display:block;margin-top:4px;font-size:12px"></small>
+    </div>
     <div><label>Email</label><input type="email" name="email"></div>
-    <div><label>Aadhaar (UIDAI)</label><input name="uidai_number" id="uidai_number" maxlength="14" placeholder="XXXX XXXX XXXX"></div>
+    <div>
+      <label>Aadhaar (UIDAI)</label>
+      <input name="uidai_number" id="uidai_number" type="text" inputmode="numeric" maxlength="14" placeholder="XXXX XXXX XXXX">
+      <small id="uidai_number-msg" class="field-msg" style="display:block;margin-top:4px;font-size:12px"></small>
+    </div>
     <div>
       <label>Category</label>
       <select name="category" id="category" class="adm-select">

@@ -123,24 +123,19 @@ form?.addEventListener('submit', (e) => {
   }
 });
 
-// UIDAI live check
+// UIDAI live availability check (formatting handled in form-utils.js)
 const uidaiInput = document.getElementById('uidai_number');
 if (uidaiInput) {
-  uidaiInput.addEventListener('input', function () {
-    const digits = uidaiInput.value.replace(/\D/g, '').slice(0, 12);
-    const parts = [];
-    if (digits.length > 0) parts.push(digits.slice(0, 4));
-    if (digits.length > 4) parts.push(digits.slice(4, 8));
-    if (digits.length > 8) parts.push(digits.slice(8, 12));
-    uidaiInput.value = parts.join(' ');
-  });
   uidaiInput.addEventListener('blur', function () {
     const v = uidaiInput.value.replace(/\D/g, '');
-    if (v.length !== 12) return;
+    const el = document.getElementById('uidai-msg');
+    if (v.length !== 12) {
+      if (el) el.textContent = '';
+      return;
+    }
     fetch((window.APP_BASE || '') + '/api/check-uidai?uidai=' + v)
       .then((r) => r.json())
       .then((d) => {
-        const el = document.getElementById('uidai-msg');
         if (!el) return;
         el.textContent = d.message;
         el.style.color = d.available ? '#16a34a' : '#dc2626';

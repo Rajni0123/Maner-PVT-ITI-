@@ -170,12 +170,14 @@ $navActive = 'admission';
               </div>
               <div class="space-y-2">
                 <label class="font-bold text-sm block">UIDAI / Aadhaar *</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="uidai_number" id="uidai_number" value="<?= e(old('uidai_number')) ?>" maxlength="14" placeholder="XXXX XXXX XXXX" required type="text"/>
+                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="uidai_number" id="uidai_number" value="<?= e(old('uidai_number')) ?>" maxlength="14" placeholder="XXXX XXXX XXXX" required type="text" inputmode="numeric" autocomplete="off"/>
+                <small id="uidai_number-msg" class="field-msg text-xs"></small>
                 <small id="uidai-msg" class="text-xs"></small>
               </div>
               <div class="space-y-2">
                 <label class="font-bold text-sm block">Mobile Number *</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="mobile" value="<?= e(old('mobile')) ?>" pattern="\d{10}" required type="tel" placeholder="10-digit mobile"/>
+                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="mobile" id="mobile" value="<?= e(old('mobile')) ?>" pattern="\d{10}" maxlength="10" required type="tel" inputmode="numeric" placeholder="10-digit mobile" autocomplete="tel"/>
+                <small id="mobile-msg" class="field-msg text-xs"></small>
               </div>
               <div class="space-y-2">
                 <label class="font-bold text-sm block">Email Address</label>

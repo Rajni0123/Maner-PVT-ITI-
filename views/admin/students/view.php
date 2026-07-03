@@ -41,11 +41,19 @@ $bsccApplied = $admission['student_credit_card'] ?? 'No';
     <div><label>Student Name *</label><input name="student_name" value="<?= e($s['student_name']) ?>" required></div>
     <div><label>Father Name</label><input name="father_name" value="<?= e($s['father_name']) ?>"></div>
     <div><label>Mother Name</label><input name="mother_name" value="<?= e($s['mother_name']) ?>"></div>
-    <div><label>Mobile *</label><input name="mobile" value="<?= e($s['mobile']) ?>" maxlength="10" pattern="\d{10}" required></div>
+    <div>
+      <label>Mobile *</label>
+      <input name="mobile" id="mobile" type="tel" inputmode="numeric" value="<?= e($s['mobile']) ?>" maxlength="10" pattern="\d{10}" required placeholder="10-digit mobile">
+      <small id="mobile-msg" class="field-msg" style="display:block;margin-top:4px;font-size:12px"></small>
+    </div>
     <div><label>Email</label><input type="email" name="email" value="<?= e($s['email']) ?>"></div>
     <div><label>DOB</label><input type="date" name="dob" value="<?= e($s['dob']) ?>"></div>
     <div><label>Gender</label><select name="gender"><option value="">—</option><?php foreach (['Male', 'Female', 'Other'] as $g): ?><option value="<?= $g ?>" <?= ($s['gender'] ?? '') === $g ? 'selected' : '' ?>><?= $g ?></option><?php endforeach; ?></select></div>
-    <div><label>Aadhaar (UIDAI)</label><input name="uidai_number" id="uidai_number" maxlength="14" value="<?= e(format_uidai($s['uidai_number'] ?? '')) ?>"></div>
+    <div>
+      <label>Aadhaar (UIDAI)</label>
+      <input name="uidai_number" id="uidai_number" type="text" inputmode="numeric" maxlength="14" value="<?= e(format_uidai($s['uidai_number'] ?? '')) ?>" placeholder="XXXX XXXX XXXX">
+      <small id="uidai_number-msg" class="field-msg" style="display:block;margin-top:4px;font-size:12px"></small>
+    </div>
     <div><label>Category</label><select name="category"><?php foreach (['General', 'OBC', 'SC', 'ST', 'EWS'] as $cat): ?><option value="<?= $cat ?>" <?= ($s['category'] ?? '') === $cat ? 'selected' : '' ?>><?= $cat ?></option><?php endforeach; ?></select></div>
     <div><label>PWD Claim</label><select name="pwd_claim"><option value="No" <?= ($s['pwd_claim'] ?? 'No') === 'No' ? 'selected' : '' ?>>No</option><option value="Yes" <?= ($s['pwd_claim'] ?? '') === 'Yes' ? 'selected' : '' ?>>Yes</option></select></div>
     <div><label>PWD Category</label><input name="pwd_category" value="<?= e($s['pwd_category']) ?>"></div>
