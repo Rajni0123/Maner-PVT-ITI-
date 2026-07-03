@@ -11,8 +11,12 @@ class Upload
         if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
             return null;
         }
+        // Empty optional file field (name blank)
+        if (trim((string) ($file['name'] ?? '')) === '' || (int) ($file['size'] ?? 0) <= 0) {
+            return null;
+        }
         if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            throw new \RuntimeException('File upload failed.');
+            throw new \RuntimeException(self::uploadErrorMessage((int) $file['error']));
         }
 
         $maxBytes = (int) config('upload_max_mb', 10) * 1024 * 1024;
@@ -20,15 +24,21 @@ class Upload
             throw new \RuntimeException('File too large. Max ' . config('upload_max_mb') . 'MB.');
         }
 
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = config('allowed_upload_ext', []);
-        if (!in_array($ext, $allowed, true)) {
-            throw new \RuntimeException('Invalid file type. Allowed: ' . implode(', ', $allowed));
+        $allowed = self::allowedExtensions();
+        $ext = self::detectExtension($file);
+        if ($ext === '' || !in_array($ext, $allowed, true)) {
+            throw new \RuntimeException(
+                'Invalid file type' . ($ext !== '' ? " (.{$ext})" : '') .
+                '. Allowed: ' . implode(', ', $allowed)
+            );
         }
 
         $dir = upload_dir_path();
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
+        }
+        if (!is_writable($dir)) {
+            throw new \RuntimeException('Upload folder is not writable. Check uploads/ permissions.');
         }
 
         $filename = $prefix . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
@@ -53,6 +63,81 @@ class Upload
     private static function isImageExtension(string $ext): bool
     {
         return in_array($ext, self::IMAGE_EXTENSIONS, true);
+    }
+
+    /** @return list<string> */
+    private static function allowedExtensions(): array
+    {
+        $allowed = config('allowed_upload_ext', ['jpg', 'jpeg', 'png', 'webp', 'pdf']);
+        if (!is_array($allowed) || $allowed === []) {
+            $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+        }
+        $allowed = array_map(static fn($e) => strtolower(trim((string) $e)), $allowed);
+        // Common aliases
+        if (in_array('jpg', $allowed, true) || in_array('jpeg', $allowed, true)) {
+            $allowed[] = 'jfif';
+            $allowed[] = 'jpe';
+        }
+        return array_values(array_unique($allowed));
+    }
+
+    private static function detectExtension(array $file): string
+    {
+        $name = (string) ($file['name'] ?? '');
+        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        $ext = preg_replace('/[^a-z0-9]/', '', $ext) ?? '';
+
+        // Map aliases
+        $aliases = [
+            'jfif' => 'jpg',
+            'jpe' => 'jpg',
+            'jpeg' => 'jpeg',
+        ];
+        if (isset($aliases[$ext])) {
+            // keep jpeg as jpeg, jfif as jpg for storage
+            if ($ext === 'jfif' || $ext === 'jpe') {
+                $ext = 'jpg';
+            }
+        }
+
+        if ($ext !== '') {
+            return $ext;
+        }
+
+        // Fallback: detect from MIME / file contents when extension missing
+        $mime = (string) ($file['type'] ?? '');
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        if ($tmp !== '' && is_file($tmp) && function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $detected = finfo_file($finfo, $tmp) ?: '';
+                finfo_close($finfo);
+                if ($detected !== '') {
+                    $mime = $detected;
+                }
+            }
+        }
+
+        return match (strtolower($mime)) {
+            'image/jpeg', 'image/jpg', 'image/pjpeg' => 'jpg',
+            'image/png', 'image/x-png' => 'png',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+            'application/pdf', 'application/x-pdf', 'application/acrobat', 'applications/vnd.pdf', 'text/pdf' => 'pdf',
+            default => '',
+        };
+    }
+
+    private static function uploadErrorMessage(int $code): string
+    {
+        return match ($code) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'File too large for server limits.',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded. Please try again.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Server missing temporary upload folder.',
+            UPLOAD_ERR_CANT_WRITE => 'Server failed to write uploaded file.',
+            UPLOAD_ERR_EXTENSION => 'Upload blocked by server extension.',
+            default => 'File upload failed.',
+        };
     }
 
     private static function optimizeImage(string $sourcePath, string $prefix, string $dir): ?string
