@@ -917,21 +917,16 @@ html[data-admin-theme="dark"] nav.fixed.bottom-0 {
 
 .fee-search-icon {
   position: absolute;
-  left: 0.85rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--admin-on-surface-variant);
   pointer-events: none;
-  z-index: 1;
-  font-size: 22px;
-  line-height: 1;
 }
 
-.admin-content .fee-student-search input,
-.admin-content .fee-student-search input[type="search"],
 .fee-student-search input {
   width: 100%;
-  padding: 0.7rem 0.85rem 0.7rem 2.85rem !important;
+  padding: 0.65rem 0.75rem 0.65rem 2.5rem;
   border: 1px solid var(--admin-outline-variant);
   border-radius: var(--admin-radius-lg);
   font-size: 0.95rem;

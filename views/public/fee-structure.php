@@ -118,7 +118,7 @@ $navActive = 'admission';
         <p class="font-body-md text-on-surface-variant">FOR SESSION AUG 2026 – 2028</p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <a href="<?= site_url('fee-structure/pdf') ?>" target="_blank" class="border border-primary text-primary px-4 py-2 flex items-center gap-2 hover:bg-primary-container hover:text-white transition-colors">
+        <a href="<?= site_url('fee-structure/pdf') ?>" download class="border border-primary text-primary px-4 py-2 flex items-center gap-2 hover:bg-primary-container hover:text-white transition-colors">
           <span class="material-symbols-outlined">picture_as_pdf</span>
           Download Fee PDF
         </a>

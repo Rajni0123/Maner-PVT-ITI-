@@ -15,7 +15,8 @@ $navItems = [
     ['url' => 'admin/contacts', 'icon' => 'contact_support', 'label' => 'Inquiries'],
     ['url' => 'admin/newsletter', 'icon' => 'mail', 'label' => 'Newsletter'],
     ['url' => 'admin/fees', 'icon' => 'payments', 'label' => 'Fee Tracker', 'match' => 'admin/fees'],
-    ['url' => 'admin/fee-reminders', 'icon' => 'mark_email_unread', 'label' => 'Fee Reminders'],
+    ['url' => 'admin/fee-reminders', 'icon' => 'notifications_active', 'label' => 'Fee Reminders'],
+    ['url' => 'admin/settings#sms-settings', 'icon' => 'sms', 'label' => 'SMS Settings'],
     ['url' => 'admin/staff/salary', 'icon' => 'receipt_long', 'label' => 'Staff Salary', 'match' => 'admin/staff'],
     ['url' => 'admin/finance', 'icon' => 'account_balance', 'label' => 'Finance Reports'],
 ];

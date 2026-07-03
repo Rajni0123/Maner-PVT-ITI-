@@ -276,32 +276,40 @@ class AdminFeeController
     public static function dueNotifyForm(): void
     {
         Auth::require();
-        $withEmail = self::dueStudentsWithEmail();
-        $withoutEmail = self::dueStudentsWithoutEmail();
+        $students = self::allDueStudents();
+        $withEmail = 0;
+        $withMobile = 0;
         $totalDue = 0.0;
-        foreach ($withEmail as $s) {
+        foreach ($students as $s) {
             $totalDue += (float) $s['total_due'];
-        }
-        foreach ($withoutEmail as $s) {
-            $totalDue += (float) $s['total_due'];
+            if (($s['email'] ?? '') !== '') {
+                $withEmail++;
+            }
+            if (\App\Core\Sms::normalizeMobile((string) ($s['mobile'] ?? '')) !== '') {
+                $withMobile++;
+            }
         }
 
         $settings = \App\Models\SiteData::settings();
         $header = \App\Models\SiteData::header();
+        $defaultSms = 'Dear {name}, fee due {due} for {trade} at {institute}. Please pay soon. Call {phone}';
 
         View::render('admin/fees/due-notify', [
             'title' => 'Fee Reminder Panel',
-            'students' => $withEmail,
-            'studentsNoEmail' => $withoutEmail,
+            'students' => $students,
             'stats' => [
-                'with_email' => count($withEmail),
-                'without_email' => count($withoutEmail),
+                'total_students' => count($students),
+                'with_email' => $withEmail,
+                'with_mobile' => $withMobile,
                 'total_due' => $totalDue,
             ],
             'mailFrom' => $settings['mail_from'] ?? ($header['email'] ?? ''),
             'mailFromName' => $settings['mail_from_name'] ?? ($header['logo_text'] ?? 'Maner Private ITI'),
             'mailSubject' => $settings['fee_reminder_subject'] ?? '',
             'mailMessage' => $settings['fee_reminder_message'] ?? '',
+            'smsMessage' => $settings['fee_reminder_sms_message'] ?? $defaultSms,
+            'smsConfigured' => \App\Core\Sms::isConfigured(),
+            'smsStatus' => \App\Core\Sms::statusLabel(),
             'header' => $header,
         ], 'admin');
     }
@@ -311,12 +319,18 @@ class AdminFeeController
         Auth::require();
         verify_csrf();
 
-        // Save mail setup for next time
+        $channel = strtolower(trim((string) ($_POST['notify_channel'] ?? 'email')));
+        if (!in_array($channel, ['email', 'sms', 'both'], true)) {
+            $channel = 'email';
+        }
+
+        // Save setup for next time
         foreach ([
             'mail_from' => trim($_POST['mail_from'] ?? ''),
             'mail_from_name' => trim($_POST['mail_from_name'] ?? ''),
             'fee_reminder_subject' => trim($_POST['mail_subject'] ?? ''),
             'fee_reminder_message' => trim($_POST['mail_message'] ?? ''),
+            'fee_reminder_sms_message' => trim($_POST['sms_message'] ?? ''),
         ] as $key => $value) {
             if ($value === '') {
                 continue;
@@ -335,14 +349,24 @@ class AdminFeeController
             redirect('admin/fee-reminders');
         }
 
-        $all = self::dueStudentsWithEmail();
+        if (($channel === 'sms' || $channel === 'both') && !\App\Core\Sms::isConfigured()) {
+            flash('error', 'SMS gateway configured nahi hai. Settings → SMS Notification mein API key enable karein.');
+            redirect('admin/fee-reminders');
+        }
+
+        $all = self::allDueStudents();
         $byKey = [];
         foreach ($all as $row) {
             $byKey[$row['key']] = $row;
         }
 
-        $sent = 0;
-        $failed = 0;
+        $emailSent = 0;
+        $emailFailed = 0;
+        $smsSent = 0;
+        $smsFailed = 0;
+        $skipped = 0;
+        $lastSmsError = '';
+
         $institute = \App\Models\SiteData::header();
         $instituteName = trim($_POST['mail_from_name'] ?? '') ?: ($institute['logo_text'] ?? config('site_name', 'Maner Private ITI'));
         if ($instituteName === 'Maner Pvt ITI') {
@@ -352,6 +376,13 @@ class AdminFeeController
         $officeEmail = trim($_POST['mail_from'] ?? '') ?: ($institute['email'] ?? '');
         $customSubject = trim($_POST['mail_subject'] ?? '');
         $customMessage = trim($_POST['mail_message'] ?? '');
+        $smsTemplate = trim($_POST['sms_message'] ?? '');
+        if ($smsTemplate === '') {
+            $smsTemplate = 'Dear {name}, fee due {due} for {trade} at {institute}. Please pay soon. Call {phone}';
+        }
+
+        $settings = \App\Models\SiteData::settings();
+        $useDltVars = ($settings['sms_provider'] ?? '') === 'fast2sms' && ($settings['sms_route'] ?? '') === 'dlt';
 
         foreach ($keys as $key) {
             $key = (string) $key;
@@ -359,36 +390,89 @@ class AdminFeeController
                 continue;
             }
             $row = $byKey[$key];
-            $ok = self::sendDueEmail($row, $instituteName, $phone, $officeEmail, $customSubject, $customMessage);
-            if ($ok) {
-                $sent++;
-            } else {
-                $failed++;
+            $didSomething = false;
+
+            if ($channel === 'email' || $channel === 'both') {
+                if (($row['email'] ?? '') !== '') {
+                    $didSomething = true;
+                    if (self::sendDueEmail($row, $instituteName, $phone, $officeEmail, $customSubject, $customMessage)) {
+                        $emailSent++;
+                    } else {
+                        $emailFailed++;
+                    }
+                } elseif ($channel === 'email') {
+                    $skipped++;
+                }
+            }
+
+            if ($channel === 'sms' || $channel === 'both') {
+                $mobile = \App\Core\Sms::normalizeMobile((string) ($row['mobile'] ?? ''));
+                if ($mobile !== '') {
+                    $didSomething = true;
+                    $vars = [
+                        'name' => $row['student_name'] ?: 'Student',
+                        'due' => format_inr($row['total_due'] ?? 0),
+                        'trade' => $row['trade'] ?: 'Trade',
+                        'institute' => $instituteName,
+                        'phone' => format_mobile($phone) ?: $phone,
+                        'mobile' => format_mobile($mobile),
+                    ];
+                    $payload = $useDltVars
+                        ? implode('|', [
+                            $vars['name'],
+                            preg_replace('/[^\d.]/', '', (string) ($row['total_due'] ?? 0)) ?: '0',
+                            $vars['trade'],
+                            $vars['institute'],
+                            preg_replace('/\D+/', '', (string) $phone) ?: '',
+                        ])
+                        : \App\Core\Sms::renderTemplate($smsTemplate, $vars);
+
+                    $result = \App\Core\Sms::send($mobile, $payload);
+                    if (!empty($result['ok'])) {
+                        $smsSent++;
+                    } else {
+                        $smsFailed++;
+                        $lastSmsError = (string) ($result['error'] ?? 'SMS failed');
+                    }
+                } elseif ($channel === 'sms') {
+                    $skipped++;
+                }
+            }
+
+            if (!$didSomething && $channel === 'both') {
+                $skipped++;
             }
         }
 
-        if ($sent > 0) {
-            flash('success', "Fee reminder email successfully sent to {$sent} student(s)." . ($failed ? " Failed: {$failed}." : ''));
+        $parts = [];
+        if ($channel === 'email' || $channel === 'both') {
+            $parts[] = "Email sent: {$emailSent}" . ($emailFailed ? ", failed: {$emailFailed}" : '');
+        }
+        if ($channel === 'sms' || $channel === 'both') {
+            $parts[] = "SMS sent: {$smsSent}" . ($smsFailed ? ", failed: {$smsFailed}" : '');
+        }
+        if ($skipped > 0) {
+            $parts[] = "Skipped (no contact): {$skipped}";
+        }
+
+        if ($emailSent + $smsSent > 0) {
+            $msg = 'Fee reminder notifications sent. ' . implode('. ', $parts) . '.';
+            if ($lastSmsError !== '' && $smsFailed > 0) {
+                $msg .= ' Last SMS error: ' . $lastSmsError;
+            }
+            flash('success', $msg);
         } else {
-            flash('error', 'No emails sent. Check student emails and server mail() / SMTP settings.');
+            $err = 'No notifications sent. ' . implode('. ', $parts) . '.';
+            if ($lastSmsError !== '') {
+                $err .= ' SMS error: ' . $lastSmsError;
+            }
+            flash('error', $err);
         }
         redirect('admin/fee-reminders');
     }
 
     /** @return list<array<string,mixed>> */
-    private static function dueStudentsWithEmail(): array
-    {
-        return self::groupDueStudents(true);
-    }
-
-    /** @return list<array<string,mixed>> */
-    private static function dueStudentsWithoutEmail(): array
-    {
-        return self::groupDueStudents(false);
-    }
-
-    /** @return list<array<string,mixed>> */
-    private static function groupDueStudents(bool $withEmail): array
+    private static function allDueStudents(): array
     {
         $fees = Database::fetchAll(
             'SELECT * FROM student_fees WHERE paid_amount < amount ORDER BY student_name, created_at DESC'
@@ -402,20 +486,14 @@ class AdminFeeController
             }
 
             $email = self::resolveStudentEmail($fee);
-            if ($withEmail && $email === '') {
-                continue;
-            }
-            if (!$withEmail && $email !== '') {
-                continue;
-            }
-
-            $key = md5(strtolower($email ?: 'none') . '|' . strtolower(trim($fee['student_name'] ?? '')) . '|' . preg_replace('/\D/', '', (string) ($fee['mobile'] ?? '')));
+            $mobile = trim((string) ($fee['mobile'] ?? ''));
+            $key = md5(strtolower($email ?: 'none') . '|' . strtolower(trim($fee['student_name'] ?? '')) . '|' . preg_replace('/\D/', '', $mobile));
             if (!isset($grouped[$key])) {
                 $grouped[$key] = [
                     'key' => $key,
                     'email' => $email,
                     'student_name' => $fee['student_name'] ?? '',
-                    'mobile' => $fee['mobile'] ?? '',
+                    'mobile' => $mobile,
                     'trade' => $fee['trade'] ?? '',
                     'total_due' => 0.0,
                     'fee_count' => 0,
@@ -432,6 +510,9 @@ class AdminFeeController
             ];
             if (($grouped[$key]['trade'] ?? '') === '' && !empty($fee['trade'])) {
                 $grouped[$key]['trade'] = $fee['trade'];
+            }
+            if (($grouped[$key]['mobile'] ?? '') === '' && $mobile !== '') {
+                $grouped[$key]['mobile'] = $mobile;
             }
         }
 

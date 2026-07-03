@@ -1,6 +1,97 @@
-<h1>Site Settings</h1>
+<div class="admin-page-header">
+  <div>
+    <h1>Site Settings</h1>
+    <p style="margin:0.35rem 0 0;color:var(--admin-on-surface-variant);font-size:0.9rem">
+      Header, SMS notification, storage, branding aur fee bank details yahan manage karein.
+    </p>
+  </div>
+</div>
+
 <form method="post" action="<?= site_url('admin/settings') ?>" enctype="multipart/form-data" class="card">
   <?= csrf_field() ?>
+
+  <?php
+  $smsOn = class_exists(\App\Core\Sms::class) && \App\Core\Sms::isConfigured();
+  $smsProvider = $settings['sms_provider'] ?? 'fast2sms';
+  $smsStatus = class_exists(\App\Core\Sms::class) ? \App\Core\Sms::statusLabel() : 'Not configured';
+  ?>
+
+  <div id="sms-settings" style="scroll-margin-top:80px;padding:1rem;margin:0 0 1.5rem;border:2px solid #7c3aed;border-radius:10px;background:#f5f3ff">
+    <h3 style="margin:0 0 0.35rem;color:#5b21b6">
+      <span class="material-symbols-outlined" style="vertical-align:middle;font-size:22px">sms</span>
+      SMS Notification (Student Mobile)
+    </h3>
+    <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">
+      Har student ke mobile number par fee reminder / notification bhejne ke liye SMS gateway configure karein.
+      India mein DLT-approved sender ID aur template use karna zaroori ho sakta hai.
+    </p>
+    <div class="admin-alert <?= $smsOn ? 'admin-alert-success' : '' ?>" style="margin-bottom:1rem">
+      SMS status: <strong><?= e($smsStatus) ?></strong>
+      <?php if ($smsOn): ?>
+      — Fee Reminders panel se student numbers par SMS bhej sakte hain.
+      <?php else: ?>
+      — Enable karke API key save karein.
+      <?php endif; ?>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label>Enable SMS</label>
+        <select name="settings[sms_enabled]">
+          <option value="0" <?= ($settings['sms_enabled'] ?? '0') !== '1' ? 'selected' : '' ?>>Disabled</option>
+          <option value="1" <?= ($settings['sms_enabled'] ?? '') === '1' ? 'selected' : '' ?>>Enabled</option>
+        </select>
+      </div>
+      <div>
+        <label>SMS Provider</label>
+        <select name="settings[sms_provider]" id="smsProvider">
+          <option value="fast2sms" <?= $smsProvider === 'fast2sms' ? 'selected' : '' ?>>Fast2SMS</option>
+          <option value="msg91" <?= $smsProvider === 'msg91' ? 'selected' : '' ?>>MSG91</option>
+          <option value="textlocal" <?= $smsProvider === 'textlocal' ? 'selected' : '' ?>>TextLocal</option>
+          <option value="custom" <?= $smsProvider === 'custom' ? 'selected' : '' ?>>Custom HTTP API</option>
+        </select>
+      </div>
+      <div>
+        <label>API Key / Auth Key</label>
+        <input name="settings[sms_api_key]" type="password" value="" autocomplete="new-password" placeholder="<?= !empty($settings['sms_api_key']) ? '•••••••• (saved — leave blank to keep)' : 'Provider API key' ?>">
+      </div>
+      <div><label>Sender ID</label><input name="settings[sms_sender_id]" value="<?= e($settings['sms_sender_id'] ?? '') ?>" placeholder="e.g. MANERI (DLT approved)" maxlength="12"></div>
+      <div>
+        <label>Route</label>
+        <select name="settings[sms_route]">
+          <option value="q" <?= ($settings['sms_route'] ?? 'q') === 'q' ? 'selected' : '' ?>>Quick / Transactional (Fast2SMS q)</option>
+          <option value="dlt" <?= ($settings['sms_route'] ?? '') === 'dlt' ? 'selected' : '' ?>>DLT Template (Fast2SMS dlt)</option>
+          <option value="4" <?= ($settings['sms_route'] ?? '') === '4' ? 'selected' : '' ?>>MSG91 Transactional (4)</option>
+        </select>
+      </div>
+      <div><label>DLT Template ID</label><input name="settings[sms_dlt_template_id]" value="<?= e($settings['sms_dlt_template_id'] ?? '') ?>" placeholder="Only for Fast2SMS DLT route"></div>
+      <div><label>Country Code</label><input name="settings[sms_country_code]" value="<?= e($settings['sms_country_code'] ?? '91') ?>" placeholder="91" maxlength="4"></div>
+      <div style="grid-column:1/-1">
+        <label>Custom API URL (only if provider = Custom)</label>
+        <input name="settings[sms_custom_url]" value="<?= e($settings['sms_custom_url'] ?? '') ?>" placeholder="https://api.example.com/send?to={mobile91}&amp;text={message_encoded}&amp;key={api_key}">
+        <small style="display:block;margin-top:0.35rem;color:var(--admin-on-surface-variant)">
+          Placeholders: <code>{mobile}</code>, <code>{mobile91}</code>, <code>{message}</code>, <code>{message_encoded}</code>, <code>{api_key}</code>, <code>{sender_id}</code>
+        </small>
+      </div>
+      <div>
+        <label>Custom API Method</label>
+        <select name="settings[sms_custom_method]">
+          <option value="GET" <?= ($settings['sms_custom_method'] ?? 'GET') === 'GET' ? 'selected' : '' ?>>GET</option>
+          <option value="POST" <?= ($settings['sms_custom_method'] ?? '') === 'POST' ? 'selected' : '' ?>>POST</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <label>Default Fee Reminder SMS Template</label>
+      <textarea name="settings[fee_reminder_sms_message]" rows="3" placeholder="Dear {name}, fee due {due} for {trade} at {institute}. Please pay soon. Call {phone}"><?= e($settings['fee_reminder_sms_message'] ?? 'Dear {name}, fee due {due} for {trade} at {institute}. Please pay soon. Call {phone}') ?></textarea>
+      <small style="display:block;margin-top:0.35rem;color:var(--admin-on-surface-variant)">
+        Variables: <code>{name}</code>, <code>{due}</code>, <code>{trade}</code>, <code>{institute}</code>, <code>{phone}</code>, <code>{mobile}</code>.
+        Fast2SMS DLT mode mein variables auto: <code>name|due|trade|institute|phone</code>
+      </small>
+    </div>
+    <p style="margin:0.75rem 0 0;font-size:0.85rem;color:var(--admin-on-surface-variant)">
+      SMS bhejne ke liye <a href="<?= site_url('admin/fee-reminders') ?>">Fee Reminders</a> panel use karein — channel SMS / Email / Both select karke students ke number par notification jayegi.
+    </p>
+  </div>
 
   <h3>Header</h3>
   <div class="form-grid">
