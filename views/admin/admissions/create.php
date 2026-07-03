@@ -28,7 +28,7 @@
     <div><label>Aadhaar (UIDAI)</label><input name="uidai_number" id="uidai_number" maxlength="14" placeholder="XXXX XXXX XXXX"></div>
     <div>
       <label>Category</label>
-      <select name="category">
+      <select name="category" id="category" class="adm-select">
         <?php foreach (['General', 'OBC', 'SC', 'ST', 'EWS'] as $cat): ?>
         <option value="<?= $cat ?>"><?= $cat ?></option>
         <?php endforeach; ?>
@@ -64,7 +64,10 @@
       background:#fff; color:#191c1e; font-size:14px; min-height:42px;
       appearance:auto; -webkit-appearance:menulist;
     }
-    #bscc_details_box {
+    #bscc_details_box,
+    #pwd_details_box,
+    #category_docs_box,
+    #pwd_docs_box {
       display:none; margin-top:16px; padding:16px; background:#f2f4f6;
       border:1px solid #c6c6cd; border-radius:8px;
     }
@@ -111,10 +114,34 @@
     </div>
     <div>
       <label>PWD Claim</label>
-      <select name="pwd_claim" class="adm-select">
+      <select name="pwd_claim" id="pwd_claim" class="adm-select">
         <option value="No" selected>No</option>
         <option value="Yes">Yes</option>
       </select>
+    </div>
+  </div>
+
+  <div id="pwd_details_box">
+    <h4 style="margin:0 0 0.75rem">PWD Details</h4>
+    <p style="margin:0 0 1rem;font-size:0.85rem;color:#45464d">PWD Claim = Yes par yeh details bharna zaroori hai.</p>
+    <div class="form-grid">
+      <div>
+        <label>PWD Category *</label>
+        <select name="pwd_category" id="pwd_category" class="adm-select">
+          <option value="">Select disability type</option>
+          <option value="Orthopedic">Orthopedic</option>
+          <option value="Visual">Visual</option>
+          <option value="Hearing">Hearing</option>
+          <option value="Speech">Speech</option>
+          <option value="Mental Illness">Mental Illness</option>
+          <option value="Multiple">Multiple</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Disability Percentage (%)</label>
+        <input name="pwd_percentage" id="pwd_percentage" type="number" min="0" max="100" placeholder="e.g. 40">
+      </div>
     </div>
   </div>
 
@@ -169,6 +196,35 @@
     <div><label>10th Marksheet</label><input type="file" name="marksheet" accept="image/*,.pdf"></div>
   </div>
 
+  <div id="category_docs_box">
+    <h4 style="margin:0 0 0.75rem">Category Documents (SC / ST / OBC / EWS)</h4>
+    <p style="margin:0 0 1rem;font-size:0.85rem;color:#45464d">Reserved category select karne par government documents upload karein.</p>
+    <div class="form-grid">
+      <div>
+        <label>Caste Certificate (जाति प्रमाण पत्र)</label>
+        <input type="file" name="caste_certificate" accept="image/*,.pdf">
+      </div>
+      <div>
+        <label>Income Certificate (आय प्रमाण पत्र)</label>
+        <input type="file" name="income_certificate" accept="image/*,.pdf">
+      </div>
+      <div>
+        <label>Residential Certificate (आवासीय प्रमाण पत्र)</label>
+        <input type="file" name="residential_certificate" accept="image/*,.pdf">
+      </div>
+    </div>
+  </div>
+
+  <div id="pwd_docs_box">
+    <h4 style="margin:0 0 0.75rem">PWD Document</h4>
+    <div class="form-grid">
+      <div>
+        <label>PWD Certificate (दिव्यांग प्रमाण पत्र)</label>
+        <input type="file" name="pwd_certificate" accept="image/*,.pdf">
+      </div>
+    </div>
+  </div>
+
   <button class="btn btn-primary" style="margin-top:1.5rem">Save Admission</button>
 </form>
 
@@ -179,6 +235,12 @@
   var bsccBox = document.getElementById('bscc_details_box');
   var bankInput = document.getElementById('student_credit_card_bank');
   var accountInput = document.getElementById('student_credit_card_account');
+  var pwdSelect = document.getElementById('pwd_claim');
+  var pwdBox = document.getElementById('pwd_details_box');
+  var pwdDocs = document.getElementById('pwd_docs_box');
+  var pwdCategory = document.getElementById('pwd_category');
+  var categorySelect = document.getElementById('category');
+  var categoryDocs = document.getElementById('category_docs_box');
 
   function toggleBscc() {
     if (!bsccSelect || !bsccBox) return;
@@ -194,10 +256,42 @@
     }
   }
 
+  function togglePwd() {
+    if (!pwdSelect) return;
+    var show = pwdSelect.value === 'Yes';
+    if (pwdBox) pwdBox.style.display = show ? 'block' : 'none';
+    if (pwdDocs) pwdDocs.style.display = show ? 'block' : 'none';
+    if (pwdCategory) {
+      pwdCategory.required = show;
+      if (!show) pwdCategory.value = '';
+    }
+    var pct = document.getElementById('pwd_percentage');
+    if (pct && !show) pct.value = '';
+  }
+
+  function toggleCategoryDocs() {
+    if (!categorySelect || !categoryDocs) return;
+    var cat = (categorySelect.value || '').toUpperCase();
+    var show = ['SC', 'ST', 'OBC', 'EWS'].indexOf(cat) !== -1;
+    categoryDocs.style.display = show ? 'block' : 'none';
+  }
+
   if (bsccBox) bsccBox.style.display = 'none';
+  if (pwdBox) pwdBox.style.display = 'none';
+  if (pwdDocs) pwdDocs.style.display = 'none';
+  if (categoryDocs) categoryDocs.style.display = 'none';
+
   if (bsccSelect) {
     bsccSelect.addEventListener('change', toggleBscc);
     toggleBscc();
+  }
+  if (pwdSelect) {
+    pwdSelect.addEventListener('change', togglePwd);
+    togglePwd();
+  }
+  if (categorySelect) {
+    categorySelect.addEventListener('change', toggleCategoryDocs);
+    toggleCategoryDocs();
   }
 })();
 </script>

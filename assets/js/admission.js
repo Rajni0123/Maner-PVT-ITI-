@@ -201,23 +201,54 @@ document.querySelectorAll('input[name="trade"]').forEach((radio) => {
 });
 refreshTradeCards();
 
-// BSCC bank details toggle
+// BSCC / PWD / Category document toggles
 (function () {
   const bsccSelect = document.getElementById('student_credit_card');
   const bsccBox = document.getElementById('bscc_details_box');
   const bankInput = document.getElementById('student_credit_card_bank');
   const accountInput = document.getElementById('student_credit_card_account');
-  if (!bsccSelect || !bsccBox) return;
+  const pwdSelect = document.getElementById('pwd_claim');
+  const pwdBox = document.getElementById('pwd_details_box');
+  const pwdDocs = document.getElementById('pwd_docs_box');
+  const pwdCategory = document.getElementById('pwd_category');
+  const categorySelect = document.getElementById('category');
+  const categoryDocs = document.getElementById('category_docs_box');
 
   function toggleBscc() {
+    if (!bsccSelect || !bsccBox) return;
     const show = bsccSelect.value === 'Yes';
     bsccBox.classList.toggle('hidden', !show);
     if (bankInput) bankInput.required = show;
     if (accountInput) accountInput.required = show;
   }
 
-  bsccSelect.addEventListener('change', toggleBscc);
-  toggleBscc();
+  function togglePwd() {
+    if (!pwdSelect) return;
+    const show = pwdSelect.value === 'Yes';
+    if (pwdBox) pwdBox.classList.toggle('hidden', !show);
+    if (pwdDocs) pwdDocs.classList.toggle('hidden', !show);
+    if (pwdCategory) pwdCategory.required = show;
+  }
+
+  function toggleCategoryDocs() {
+    if (!categorySelect || !categoryDocs) return;
+    const cat = (categorySelect.value || '').toUpperCase();
+    const show = ['SC', 'ST', 'OBC', 'EWS'].includes(cat);
+    categoryDocs.classList.toggle('hidden', !show);
+  }
+
+  if (bsccSelect) {
+    bsccSelect.addEventListener('change', toggleBscc);
+    toggleBscc();
+  }
+  if (pwdSelect) {
+    pwdSelect.addEventListener('change', togglePwd);
+    togglePwd();
+  }
+  if (categorySelect) {
+    categorySelect.addEventListener('change', toggleCategoryDocs);
+    toggleCategoryDocs();
+  }
 })();
 
 updateForm();

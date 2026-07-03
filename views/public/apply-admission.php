@@ -161,7 +161,7 @@ $navActive = 'admission';
               </div>
               <div class="space-y-2">
                 <label class="font-bold text-sm block">Category *</label>
-                <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="category" required>
+                <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="category" id="category" required>
                   <option value="">Select</option>
                   <?php foreach (['General', 'OBC', 'SC', 'ST', 'EWS'] as $c): ?>
                   <option value="<?= e($c) ?>" <?= old('category') === $c ? 'selected' : '' ?>><?= e($c) ?></option>
@@ -183,14 +183,29 @@ $navActive = 'admission';
               </div>
               <div class="space-y-2">
                 <label class="font-bold text-sm block">PWD Claim</label>
-                <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="pwd_claim">
+                <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="pwd_claim" id="pwd_claim">
                   <option value="No" <?= old('pwd_claim', 'No') === 'No' ? 'selected' : '' ?>>No</option>
                   <option value="Yes" <?= old('pwd_claim') === 'Yes' ? 'selected' : '' ?>>Yes</option>
                 </select>
               </div>
-              <div class="space-y-2 md:col-span-2">
-                <label class="font-bold text-sm block">PWD Category</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="pwd_category" value="<?= e(old('pwd_category')) ?>" type="text"/>
+            </div>
+
+            <div id="pwd_details_box" class="border border-outline-variant bg-surface-container-low p-6 space-y-4 <?= old('pwd_claim') === 'Yes' ? '' : 'hidden' ?>">
+              <h3 class="font-headline-md text-primary">PWD Details</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">PWD Category *</label>
+                  <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="pwd_category" id="pwd_category">
+                    <option value="">Select disability type</option>
+                    <?php foreach (['Orthopedic', 'Visual', 'Hearing', 'Speech', 'Mental Illness', 'Multiple', 'Other'] as $pc): ?>
+                    <option value="<?= e($pc) ?>" <?= old('pwd_category') === $pc ? 'selected' : '' ?>><?= e($pc) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Disability Percentage (%)</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="pwd_percentage" id="pwd_percentage" value="<?= e(old('pwd_percentage')) ?>" type="number" min="0" max="100" placeholder="e.g. 40"/>
+                </div>
               </div>
             </div>
           </div>
@@ -357,6 +372,32 @@ $navActive = 'admission';
                 <label class="font-bold text-sm block">Applicant Signature *</label>
                 <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="signature" accept="image/*" required/>
                 <p class="text-xs text-on-surface-variant">Sign on white paper, scan or photo — JPG/PNG only</p>
+              </div>
+            </div>
+
+            <div id="category_docs_box" class="border border-outline-variant bg-surface-container-low p-6 space-y-4 hidden">
+              <h3 class="font-headline-md text-primary">Category Documents (SC / ST / OBC / EWS)</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Caste Certificate (जाति प्रमाण पत्र)</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="caste_certificate" accept="image/*,application/pdf"/>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Income Certificate (आय प्रमाण पत्र)</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="income_certificate" accept="image/*,application/pdf"/>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Residential Certificate (आवासीय प्रमाण पत्र)</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="residential_certificate" accept="image/*,application/pdf"/>
+                </div>
+              </div>
+            </div>
+
+            <div id="pwd_docs_box" class="border border-outline-variant bg-surface-container-low p-6 space-y-4 hidden">
+              <h3 class="font-headline-md text-primary">PWD Document</h3>
+              <div class="space-y-2">
+                <label class="font-bold text-sm block">PWD Certificate (दिव्यांग प्रमाण पत्र)</label>
+                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="pwd_certificate" accept="image/*,application/pdf"/>
               </div>
             </div>
 

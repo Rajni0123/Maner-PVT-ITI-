@@ -63,22 +63,28 @@ class AdminAdmissionController
             $marksheet = \App\Core\Upload::save($_FILES['marksheet'] ?? [], 'marksheet');
             $signature = \App\Core\Upload::save($_FILES['signature'] ?? [], 'signature');
             $sccDoc = \App\Core\Upload::save($_FILES['student_credit_card_doc'] ?? [], 'scc');
-            if ($photo) {
-                $docs['photo'] = $photo;
+            $pwdCert = \App\Core\Upload::save($_FILES['pwd_certificate'] ?? [], 'pwd');
+            $casteCert = \App\Core\Upload::save($_FILES['caste_certificate'] ?? [], 'caste');
+            $incomeCert = \App\Core\Upload::save($_FILES['income_certificate'] ?? [], 'income');
+            $residentialCert = \App\Core\Upload::save($_FILES['residential_certificate'] ?? [], 'residential');
+            $uploaded = false;
+            foreach ([
+                'photo' => $photo,
+                'aadhaar' => $aadhaar,
+                'marksheet' => $marksheet,
+                'signature' => $signature,
+                'student_credit_card_doc' => $sccDoc,
+                'pwd_certificate' => $pwdCert,
+                'caste_certificate' => $casteCert,
+                'income_certificate' => $incomeCert,
+                'residential_certificate' => $residentialCert,
+            ] as $key => $file) {
+                if ($file) {
+                    $docs[$key] = $file;
+                    $uploaded = true;
+                }
             }
-            if ($aadhaar) {
-                $docs['aadhaar'] = $aadhaar;
-            }
-            if ($marksheet) {
-                $docs['marksheet'] = $marksheet;
-            }
-            if ($signature) {
-                $docs['signature'] = $signature;
-            }
-            if ($sccDoc) {
-                $docs['student_credit_card_doc'] = $sccDoc;
-            }
-            if (!$photo && !$aadhaar && !$marksheet && !$signature && !$sccDoc) {
+            if (!$uploaded) {
                 flash('error', 'Select at least one file to upload.');
                 redirect('admin/admissions/view/' . $id);
             }
@@ -166,6 +172,7 @@ class AdminAdmissionController
             'state' => trim($_POST['state'] ?? 'Bihar'),
             'pwd_claim' => trim($_POST['pwd_claim'] ?? 'No'),
             'pwd_category' => trim($_POST['pwd_category'] ?? ''),
+            'pwd_percentage' => trim($_POST['pwd_percentage'] ?? ''),
             'class_10th_school' => trim($_POST['class_10th_school'] ?? ''),
             'class_10th_marks_obtained' => trim($_POST['class_10th_marks_obtained'] ?? ''),
             'class_10th_total_marks' => trim($_POST['class_10th_total_marks'] ?? ''),
@@ -221,6 +228,13 @@ class AdminAdmissionController
 
         $data = normalize_admission_fields($data);
         $data['student_credit_card'] = $isBscc ? 'Yes' : 'No';
+        $data['pwd_claim'] = strcasecmp($data['pwd_claim'] ?? 'No', 'Yes') === 0 ? 'Yes' : 'No';
+        if ($data['pwd_claim'] === 'Yes' && $data['pwd_percentage'] !== '') {
+            $data['pwd_category'] = trim($data['pwd_category'] . ' (' . $data['pwd_percentage'] . '%)');
+        }
+        if ($data['pwd_claim'] !== 'Yes') {
+            $data['pwd_category'] = '';
+        }
 
         try {
             $photo = \App\Core\Upload::save($_FILES['photo'] ?? [], 'photo');
@@ -228,12 +242,20 @@ class AdminAdmissionController
             $marksheet = \App\Core\Upload::save($_FILES['marksheet'] ?? [], 'marksheet');
             $signature = \App\Core\Upload::save($_FILES['signature'] ?? [], 'signature');
             $sccDoc = \App\Core\Upload::save($_FILES['student_credit_card_doc'] ?? [], 'scc');
+            $pwdCert = \App\Core\Upload::save($_FILES['pwd_certificate'] ?? [], 'pwd');
+            $casteCert = \App\Core\Upload::save($_FILES['caste_certificate'] ?? [], 'caste');
+            $incomeCert = \App\Core\Upload::save($_FILES['income_certificate'] ?? [], 'income');
+            $residentialCert = \App\Core\Upload::save($_FILES['residential_certificate'] ?? [], 'residential');
             $documents = json_encode([
                 'photo' => $photo,
                 'aadhaar' => $aadhaar,
                 'marksheet' => $marksheet,
                 'signature' => $signature,
                 'student_credit_card_doc' => $sccDoc,
+                'pwd_certificate' => $pwdCert,
+                'caste_certificate' => $casteCert,
+                'income_certificate' => $incomeCert,
+                'residential_certificate' => $residentialCert,
             ]);
 
             $sccDetails = null;

@@ -56,6 +56,10 @@ class AdmissionController
             $marksheet = Upload::save($_FILES['marksheet'] ?? [], 'marksheet');
             $signature = Upload::save($_FILES['signature'] ?? [], 'signature');
             $sccDoc = Upload::save($_FILES['student_credit_card_doc'] ?? [], 'scc');
+            $pwdCert = Upload::save($_FILES['pwd_certificate'] ?? [], 'pwd');
+            $casteCert = Upload::save($_FILES['caste_certificate'] ?? [], 'caste');
+            $incomeCert = Upload::save($_FILES['income_certificate'] ?? [], 'income');
+            $residentialCert = Upload::save($_FILES['residential_certificate'] ?? [], 'residential');
 
             if (!$photo || !$aadhaar || !$marksheet || !$signature) {
                 throw new \RuntimeException('Photo, Aadhaar, 10th marksheet and signature are required.');
@@ -67,6 +71,10 @@ class AdmissionController
                 'marksheet' => $marksheet,
                 'signature' => $signature,
                 'student_credit_card_doc' => $sccDoc,
+                'pwd_certificate' => $pwdCert,
+                'caste_certificate' => $casteCert,
+                'income_certificate' => $incomeCert,
+                'residential_certificate' => $residentialCert,
             ]);
 
             $qualification = $data['class_10th_school']
@@ -176,6 +184,7 @@ class AdmissionController
             'class_12th_total_marks', 'class_12th_percentage', 'class_12th_subject',
             'student_credit_card', 'student_credit_card_bank', 'student_credit_card_account',
             'student_credit_card_holder', 'student_credit_card_ifsc', 'student_credit_card_branch',
+            'pwd_percentage',
         ];
         $out = [];
         foreach ($fields as $f) {
@@ -196,6 +205,13 @@ class AdmissionController
         }
         $out = normalize_admission_fields($out);
         $out['student_credit_card'] = strcasecmp($out['student_credit_card'] ?? 'No', 'Yes') === 0 ? 'Yes' : 'No';
+        $out['pwd_claim'] = strcasecmp($out['pwd_claim'] ?? 'No', 'Yes') === 0 ? 'Yes' : 'No';
+        if ($out['pwd_claim'] === 'Yes' && ($out['pwd_percentage'] ?? '') !== '') {
+            $out['pwd_category'] = trim(($out['pwd_category'] ?? '') . ' (' . $out['pwd_percentage'] . '%)');
+        }
+        if ($out['pwd_claim'] !== 'Yes') {
+            $out['pwd_category'] = '';
+        }
         return $out;
     }
 
