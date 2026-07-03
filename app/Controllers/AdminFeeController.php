@@ -276,9 +276,33 @@ class AdminFeeController
     public static function dueNotifyForm(): void
     {
         Auth::require();
+        $withEmail = self::dueStudentsWithEmail();
+        $withoutEmail = self::dueStudentsWithoutEmail();
+        $totalDue = 0.0;
+        foreach ($withEmail as $s) {
+            $totalDue += (float) $s['total_due'];
+        }
+        foreach ($withoutEmail as $s) {
+            $totalDue += (float) $s['total_due'];
+        }
+
+        $settings = \App\Models\SiteData::settings();
+        $header = \App\Models\SiteData::header();
+
         View::render('admin/fees/due-notify', [
-            'title' => 'Fee Due Email Notifications',
-            'students' => self::dueStudentsWithEmail(),
+            'title' => 'Fee Reminder Panel',
+            'students' => $withEmail,
+            'studentsNoEmail' => $withoutEmail,
+            'stats' => [
+                'with_email' => count($withEmail),
+                'without_email' => count($withoutEmail),
+                'total_due' => $totalDue,
+            ],
+            'mailFrom' => $settings['mail_from'] ?? ($header['email'] ?? ''),
+            'mailFromName' => $settings['mail_from_name'] ?? ($header['logo_text'] ?? 'Maner Private ITI'),
+            'mailSubject' => $settings['fee_reminder_subject'] ?? '',
+            'mailMessage' => $settings['fee_reminder_message'] ?? '',
+            'header' => $header,
         ], 'admin');
     }
 
@@ -287,10 +311,28 @@ class AdminFeeController
         Auth::require();
         verify_csrf();
 
+        // Save mail setup for next time
+        foreach ([
+            'mail_from' => trim($_POST['mail_from'] ?? ''),
+            'mail_from_name' => trim($_POST['mail_from_name'] ?? ''),
+            'fee_reminder_subject' => trim($_POST['mail_subject'] ?? ''),
+            'fee_reminder_message' => trim($_POST['mail_message'] ?? ''),
+        ] as $key => $value) {
+            if ($value === '') {
+                continue;
+            }
+            $exists = Database::fetch('SELECT id FROM site_settings WHERE setting_key = ?', [$key]);
+            if ($exists) {
+                Database::update('site_settings', ['setting_value' => $value], 'setting_key = ?', [$key]);
+            } else {
+                Database::insert('site_settings', ['setting_key' => $key, 'setting_value' => $value]);
+            }
+        }
+
         $keys = $_POST['students'] ?? [];
         if (!is_array($keys) || $keys === []) {
             flash('error', 'Select at least one student with fee due.');
-            redirect('admin/fees/due-notify');
+            redirect('admin/fee-reminders');
         }
 
         $all = self::dueStudentsWithEmail();
@@ -301,23 +343,23 @@ class AdminFeeController
 
         $sent = 0;
         $failed = 0;
-        $skipped = 0;
         $institute = \App\Models\SiteData::header();
-        $instituteName = $institute['logo_text'] ?? config('site_name', 'Maner Private ITI');
+        $instituteName = trim($_POST['mail_from_name'] ?? '') ?: ($institute['logo_text'] ?? config('site_name', 'Maner Private ITI'));
         if ($instituteName === 'Maner Pvt ITI') {
             $instituteName = 'Maner Private ITI';
         }
         $phone = $institute['phone'] ?? '';
-        $officeEmail = $institute['email'] ?? '';
+        $officeEmail = trim($_POST['mail_from'] ?? '') ?: ($institute['email'] ?? '');
+        $customSubject = trim($_POST['mail_subject'] ?? '');
+        $customMessage = trim($_POST['mail_message'] ?? '');
 
         foreach ($keys as $key) {
             $key = (string) $key;
             if (!isset($byKey[$key])) {
-                $skipped++;
                 continue;
             }
             $row = $byKey[$key];
-            $ok = self::sendDueEmail($row, $instituteName, $phone, $officeEmail);
+            $ok = self::sendDueEmail($row, $instituteName, $phone, $officeEmail, $customSubject, $customMessage);
             if ($ok) {
                 $sent++;
             } else {
@@ -326,15 +368,27 @@ class AdminFeeController
         }
 
         if ($sent > 0) {
-            flash('success', "Fee due notification sent to {$sent} student(s)." . ($failed ? " Failed: {$failed}." : ''));
+            flash('success', "Fee reminder email successfully sent to {$sent} student(s)." . ($failed ? " Failed: {$failed}." : ''));
         } else {
-            flash('error', 'No emails sent. Check student email addresses and server mail settings.');
+            flash('error', 'No emails sent. Check student emails and server mail() / SMTP settings.');
         }
-        redirect('admin/fees/due-notify');
+        redirect('admin/fee-reminders');
     }
 
     /** @return list<array<string,mixed>> */
     private static function dueStudentsWithEmail(): array
+    {
+        return self::groupDueStudents(true);
+    }
+
+    /** @return list<array<string,mixed>> */
+    private static function dueStudentsWithoutEmail(): array
+    {
+        return self::groupDueStudents(false);
+    }
+
+    /** @return list<array<string,mixed>> */
+    private static function groupDueStudents(bool $withEmail): array
     {
         $fees = Database::fetchAll(
             'SELECT * FROM student_fees WHERE paid_amount < amount ORDER BY student_name, created_at DESC'
@@ -348,11 +402,14 @@ class AdminFeeController
             }
 
             $email = self::resolveStudentEmail($fee);
-            if ($email === '') {
+            if ($withEmail && $email === '') {
+                continue;
+            }
+            if (!$withEmail && $email !== '') {
                 continue;
             }
 
-            $key = md5(strtolower($email) . '|' . strtolower(trim($fee['student_name'] ?? '')) . '|' . preg_replace('/\D/', '', (string) ($fee['mobile'] ?? '')));
+            $key = md5(strtolower($email ?: 'none') . '|' . strtolower(trim($fee['student_name'] ?? '')) . '|' . preg_replace('/\D/', '', (string) ($fee['mobile'] ?? '')));
             if (!isset($grouped[$key])) {
                 $grouped[$key] = [
                     'key' => $key,
@@ -445,49 +502,110 @@ class AdminFeeController
         return '';
     }
 
-    private static function sendDueEmail(array $row, string $instituteName, string $phone, string $officeEmail): bool
-    {
+    private static function sendDueEmail(
+        array $row,
+        string $instituteName,
+        string $phone,
+        string $officeEmail,
+        string $customSubject = '',
+        string $customMessage = ''
+    ): bool {
         $name = $row['student_name'] ?: 'Student';
         $due = format_inr($row['total_due'] ?? 0);
         $trade = $row['trade'] ?: '—';
-        $lines = '';
+        $mobile = format_mobile($row['mobile'] ?? '');
+        $today = date('d M Y');
+
+        $rowsHtml = '';
+        $rowsText = '';
         foreach ($row['items'] as $item) {
-            $dueDate = !empty($item['due_date']) ? format_date($item['due_date']) : '—';
-            $lines .= '<tr><td style="padding:8px;border:1px solid #ddd">' . e($item['fee_type']) . '</td>'
-                . '<td style="padding:8px;border:1px solid #ddd">' . e(format_inr($item['due'])) . '</td>'
-                . '<td style="padding:8px;border:1px solid #ddd">' . e($dueDate) . '</td></tr>';
+            $dueDate = !empty($item['due_date']) ? format_date($item['due_date']) : 'As applicable';
+            $amount = format_inr($item['due']);
+            $type = $item['fee_type'] ?? 'Fee';
+            $rowsHtml .= '<tr>'
+                . '<td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:14px">' . e($type) . '</td>'
+                . '<td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:14px;text-align:right;font-weight:700;color:#b45309">' . e($amount) . '</td>'
+                . '<td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#64748b">' . e($dueDate) . '</td>'
+                . '</tr>';
+            $rowsText .= "- {$type}: {$amount} (Due: {$dueDate})\n";
         }
 
-        $subject = 'Fee Due Reminder - ' . $instituteName;
-        $html = '
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#191c1e">
-          <div style="background:#131b2e;color:#fff;padding:16px 20px">
-            <h2 style="margin:0">' . e($instituteName) . '</h2>
-            <p style="margin:6px 0 0;color:#fea619;font-size:13px">Fee Due Notification</p>
-          </div>
-          <div style="padding:20px;border:1px solid #e0e3e5;border-top:0">
-            <p>Dear <strong>' . e($name) . '</strong>,</p>
-            <p>This is a reminder that you have pending fee dues at ' . e($instituteName) . '.</p>
-            <p><strong>Trade:</strong> ' . e($trade) . '<br>
-            <strong>Total Due Amount:</strong> <span style="color:#ba1a1a;font-size:18px;font-weight:bold">' . e($due) . '</span></p>
-            <table style="width:100%;border-collapse:collapse;margin:16px 0">
-              <thead>
-                <tr style="background:#f2f4f6">
-                  <th style="padding:8px;border:1px solid #ddd;text-align:left">Fee Type</th>
-                  <th style="padding:8px;border:1px solid #ddd;text-align:left">Due Amount</th>
-                  <th style="padding:8px;border:1px solid #ddd;text-align:left">Due Date</th>
-                </tr>
-              </thead>
-              <tbody>' . $lines . '</tbody>
-            </table>
-            <p>Please clear your dues at the earliest. For any query, contact the institute office'
-            . ($phone ? ' at <strong>' . e(format_mobile($phone)) . '</strong>' : '')
-            . ($officeEmail ? ' or email <strong>' . e($officeEmail) . '</strong>' : '')
-            . '.</p>
-            <p style="margin-top:24px">Regards,<br><strong>' . e($instituteName) . '</strong></p>
-          </div>
-        </div>';
+        $extraNote = $customMessage !== ''
+            ? '<p style="margin:16px 0;padding:12px 14px;background:#fff7ed;border-left:4px solid #fea619;color:#7c2d12;font-size:14px;line-height:1.5">' . nl2br(e($customMessage)) . '</p>'
+            : '';
 
-        return \App\Core\Mail::send($row['email'], $subject, $html);
+        $subject = $customSubject !== ''
+            ? $customSubject
+            : 'Fee Payment Reminder / शुल्क भुगतान अनुस्मारक — ' . $instituteName;
+
+        $html = '<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f1f5f9">'
+            . '<div style="font-family:Segoe UI,Arial,sans-serif;max-width:640px;margin:0 auto;background:#ffffff">'
+            . '<div style="background:linear-gradient(135deg,#131b2e 0%,#1e293b 100%);padding:28px 24px;text-align:center">'
+            . '<div style="display:inline-block;background:#fea619;color:#131b2e;font-size:11px;font-weight:800;letter-spacing:0.08em;padding:4px 10px;border-radius:4px;margin-bottom:12px">FEE REMINDER</div>'
+            . '<h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:800">' . e($instituteName) . '</h1>'
+            . '<p style="margin:8px 0 0;color:#94a3b8;font-size:13px">Official Fee Payment Reminder</p>'
+            . '</div>'
+            . '<div style="padding:28px 24px">'
+            . '<p style="margin:0 0 8px;font-size:15px;color:#334155">Dear <strong style="color:#0f172a">' . e($name) . '</strong>,</p>'
+            . '<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#475569">'
+            . 'This is a gentle reminder from <strong>' . e($instituteName) . '</strong> regarding your pending course fee. '
+            . 'Kindly clear the outstanding amount at the earliest to avoid any inconvenience in your training / admission process.'
+            . '</p>'
+            . '<p style="margin:0 0 18px;font-size:14px;line-height:1.7;color:#475569">'
+            . 'यह <strong>' . e($instituteName) . '</strong> की ओर से आपके बकाया शुल्क (Fee Due) के संबंध में एक आधिकारिक अनुस्मारक है। '
+            . 'कृपया अपना बकाया राशि यथाशीघ्र जमा करें, ताकि आपके प्रशिक्षण / प्रवेश प्रक्रिया में कोई बाधा न आए।'
+            . '</p>'
+            . '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px;margin-bottom:18px">'
+            . '<table style="width:100%;border-collapse:collapse;font-size:14px">'
+            . '<tr><td style="padding:4px 0;color:#64748b">Student Name</td><td style="padding:4px 0;text-align:right;font-weight:700;color:#0f172a">' . e($name) . '</td></tr>'
+            . '<tr><td style="padding:4px 0;color:#64748b">Trade / ट्रेड</td><td style="padding:4px 0;text-align:right;font-weight:700;color:#0f172a">' . e($trade) . '</td></tr>'
+            . ($mobile ? '<tr><td style="padding:4px 0;color:#64748b">Mobile</td><td style="padding:4px 0;text-align:right;font-weight:700;color:#0f172a">' . e($mobile) . '</td></tr>' : '')
+            . '<tr><td style="padding:4px 0;color:#64748b">Date</td><td style="padding:4px 0;text-align:right;font-weight:700;color:#0f172a">' . e($today) . '</td></tr>'
+            . '</table></div>'
+            . '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;text-align:center;margin-bottom:18px">'
+            . '<div style="font-size:12px;font-weight:700;letter-spacing:0.06em;color:#991b1b;text-transform:uppercase">Total Outstanding / कुल बकाया</div>'
+            . '<div style="font-size:28px;font-weight:800;color:#b91c1c;margin-top:4px">' . e($due) . '</div>'
+            . '</div>'
+            . '<table style="width:100%;border-collapse:collapse;margin-bottom:8px">'
+            . '<thead><tr style="background:#131b2e;color:#fff">'
+            . '<th style="padding:10px 12px;text-align:left;font-size:12px">Fee Type / शुल्क प्रकार</th>'
+            . '<th style="padding:10px 12px;text-align:right;font-size:12px">Amount / राशि</th>'
+            . '<th style="padding:10px 12px;text-align:left;font-size:12px">Due Date</th>'
+            . '</tr></thead><tbody>' . $rowsHtml . '</tbody></table>'
+            . $extraNote
+            . '<p style="margin:18px 0 8px;font-size:14px;line-height:1.6;color:#475569">'
+            . 'Please visit the institute office or contact us to complete the payment. Keep this email for your reference.'
+            . '</p>'
+            . '<p style="margin:0 0 18px;font-size:14px;line-height:1.7;color:#475569">'
+            . 'भुगतान हेतु संस्थान कार्यालय से संपर्क करें। यह ईमेल आपके रिकॉर्ड के लिए सुरक्षित रखें।'
+            . '</p>'
+            . '<div style="background:#f1f5f9;border-radius:8px;padding:14px 16px;font-size:13px;color:#334155;line-height:1.6">'
+            . '<strong>Contact / संपर्क:</strong><br>'
+            . ($phone ? '📞 ' . e(format_mobile($phone)) . '<br>' : '')
+            . ($officeEmail ? '✉ ' . e($officeEmail) . '<br>' : '')
+            . '🏛 ' . e($instituteName)
+            . '</div>'
+            . '<p style="margin:22px 0 0;font-size:14px;color:#0f172a">Warm regards / सादर,<br><strong>' . e($instituteName) . '</strong><br>'
+            . '<span style="color:#64748b;font-size:12px">Accounts / Admission Office</span></p>'
+            . '</div>'
+            . '<div style="background:#0f172a;color:#94a3b8;padding:14px 20px;text-align:center;font-size:11px;line-height:1.5">'
+            . 'This is an official automated reminder from ' . e($instituteName) . '.<br>'
+            . 'Please do not reply to this email if it is a no-reply address. Contact the office for assistance.'
+            . '</div></div></body></html>';
+
+        $text = "Fee Payment Reminder / शुल्क भुगतान अनुस्मारक\n"
+            . "{$instituteName}\n\n"
+            . "Dear {$name},\n\n"
+            . "This is a reminder regarding your pending fee dues.\n"
+            . "Trade: {$trade}\n"
+            . "Total Due: {$due}\n\n"
+            . "Details:\n{$rowsText}\n"
+            . ($customMessage !== '' ? $customMessage . "\n\n" : '')
+            . "Please clear your dues at the earliest.\n"
+            . ($phone ? "Phone: {$phone}\n" : '')
+            . ($officeEmail ? "Email: {$officeEmail}\n" : '')
+            . "\nRegards,\n{$instituteName}\n";
+
+        return \App\Core\Mail::send($row['email'], $subject, $html, $text);
     }
 }
