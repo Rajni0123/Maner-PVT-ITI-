@@ -59,37 +59,31 @@
   }
   ?>
   <style>
-    .adm-choice-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; }
-    .adm-choice-btn {
-      display:inline-block; min-width:120px; padding:10px 16px; border:2px solid #c6c6cd;
-      background:#fff; color:#191c1e; font-weight:700; font-size:14px; cursor:pointer;
-      border-radius:6px; text-align:center;
+    .adm-select {
+      width:100%; padding:10px 12px; border:1px solid #c6c6cd; border-radius:6px;
+      background:#fff; color:#191c1e; font-size:14px; min-height:42px;
+      appearance:auto; -webkit-appearance:menulist;
     }
-    .adm-choice-btn:hover { border-color:#131b2e; }
-    .adm-choice-btn.is-active { background:#131b2e; border-color:#131b2e; color:#fff; }
-    .adm-selected-label { margin:8px 0 0; font-size:13px; color:#45464d; font-weight:600; }
     #bscc_details_box {
       display:none; margin-top:16px; padding:16px; background:#f2f4f6;
       border:1px solid #c6c6cd; border-radius:8px;
     }
-    #bscc_details_box.is-open { display:block !important; }
   </style>
 
   <h3 style="margin-top:1.5rem">Course Details</h3>
   <div class="form-grid">
     <div>
       <label>Trade *</label>
-      <input type="hidden" name="trade" id="trade" value="">
-      <div class="adm-choice-row" id="tradePicker">
+      <select name="trade" id="trade" class="adm-select" required>
+        <option value="">Select trade</option>
         <?php foreach ($tradeOptions as $name): ?>
-        <button type="button" class="adm-choice-btn" data-value="<?= e($name) ?>"><?= e($name) ?></button>
+        <option value="<?= e($name) ?>"><?= e($name) ?></option>
         <?php endforeach; ?>
-      </div>
-      <p class="adm-selected-label" id="tradeSelectedLabel">Selected: —</p>
+      </select>
     </div>
     <div>
       <label>Session *</label>
-      <select name="session" id="session" required style="width:100%;padding:10px;border:1px solid #c6c6cd;border-radius:6px;background:#fff;color:#191c1e">
+      <select name="session" id="session" class="adm-select" required>
         <option value="">Select session</option>
         <?php foreach ($sessionOptions as $name): ?>
         <option value="<?= e($name) ?>"><?= e($name) ?></option>
@@ -102,7 +96,7 @@
     </div>
     <div>
       <label>Status</label>
-      <select name="status" style="width:100%;padding:10px;border:1px solid #c6c6cd;border-radius:6px;background:#fff;color:#191c1e">
+      <select name="status" class="adm-select">
         <option value="Pending" selected>Pending</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
@@ -110,16 +104,14 @@
     </div>
     <div>
       <label>BSCC (Student Credit Card)</label>
-      <input type="hidden" name="student_credit_card" id="student_credit_card" value="No">
-      <div class="adm-choice-row" id="bsccPicker">
-        <button type="button" class="adm-choice-btn is-active" data-value="No">No</button>
-        <button type="button" class="adm-choice-btn" data-value="Yes">Yes</button>
-      </div>
-      <p class="adm-selected-label" id="bsccSelectedLabel">Selected: No</p>
+      <select name="student_credit_card" id="student_credit_card" class="adm-select">
+        <option value="No" selected>No</option>
+        <option value="Yes">Yes</option>
+      </select>
     </div>
     <div>
       <label>PWD Claim</label>
-      <select name="pwd_claim" style="width:100%;padding:10px;border:1px solid #c6c6cd;border-radius:6px;background:#fff;color:#191c1e">
+      <select name="pwd_claim" class="adm-select">
         <option value="No" selected>No</option>
         <option value="Yes">Yes</option>
       </select>
@@ -191,44 +183,15 @@
 <script src="<?= asset('js/form-utils.js') ?>"></script>
 <script>
 (function () {
-  function bindPicker(pickerId, inputId, labelId, onChange) {
-    var picker = document.getElementById(pickerId);
-    var input = document.getElementById(inputId);
-    var label = document.getElementById(labelId);
-    if (!picker || !input) return;
-
-    picker.querySelectorAll('button[data-value]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var value = btn.getAttribute('data-value') || '';
-        input.value = value;
-        picker.querySelectorAll('button[data-value]').forEach(function (b) {
-          b.classList.remove('is-active');
-          b.style.background = '#fff';
-          b.style.color = '#191c1e';
-          b.style.borderColor = '#c6c6cd';
-        });
-        btn.classList.add('is-active');
-        btn.style.background = '#131b2e';
-        btn.style.color = '#fff';
-        btn.style.borderColor = '#131b2e';
-        if (label) label.textContent = 'Selected: ' + (value || '—');
-        if (typeof onChange === 'function') onChange(value);
-      });
-    });
-  }
-
+  var bsccSelect = document.getElementById('student_credit_card');
   var bsccBox = document.getElementById('bscc_details_box');
   var bankInput = document.getElementById('student_credit_card_bank');
   var accountInput = document.getElementById('student_credit_card_account');
 
-  function toggleBscc(value) {
-    var show = value === 'Yes';
-    if (bsccBox) {
-      bsccBox.style.display = show ? 'block' : 'none';
-      bsccBox.classList.toggle('is-open', show);
-    }
+  function toggleBscc() {
+    if (!bsccSelect || !bsccBox) return;
+    var show = bsccSelect.value === 'Yes';
+    bsccBox.style.display = show ? 'block' : 'none';
     if (bankInput) bankInput.required = show;
     if (accountInput) accountInput.required = show;
     if (!show) {
@@ -239,30 +202,10 @@
     }
   }
 
-  // Default: hide bank box
   if (bsccBox) bsccBox.style.display = 'none';
-
-  // Default active style for BSCC No
-  var defaultBscc = document.querySelector('#bsccPicker button[data-value="No"]');
-  if (defaultBscc) {
-    defaultBscc.style.background = '#131b2e';
-    defaultBscc.style.color = '#fff';
-    defaultBscc.style.borderColor = '#131b2e';
-  }
-
-  bindPicker('tradePicker', 'trade', 'tradeSelectedLabel');
-  bindPicker('bsccPicker', 'student_credit_card', 'bsccSelectedLabel', toggleBscc);
-
-  var form = document.getElementById('adminAdmissionForm');
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      var trade = document.getElementById('trade');
-      if (!trade || !trade.value) {
-        e.preventDefault();
-        alert('Please select a Trade (Electrician or Fitter).');
-        return false;
-      }
-    });
+  if (bsccSelect) {
+    bsccSelect.addEventListener('change', toggleBscc);
+    toggleBscc();
   }
 })();
 </script>
