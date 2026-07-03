@@ -1,0 +1,6 @@
+.technical-gradient {
+  background: linear-gradient(135deg, #131b2e 0%, #1e293b 100%);
+}
+.bscc-accent-border {
+  border-left: 4px solid #188ace;
+}

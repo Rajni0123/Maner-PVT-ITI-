@@ -1,0 +1,27 @@
+# Secrets & local config
+config.php
+.env
+.env.*
+
+# Install / runtime
+storage/installed.lock
+storage/*.log
+error_log
+*.log
+
+# Uploads (user content)
+uploads/*
+!uploads/.htaccess
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies / cache
+vendor/
+node_modules/
+*.cache

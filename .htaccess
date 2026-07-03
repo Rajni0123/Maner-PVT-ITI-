@@ -1,0 +1,73 @@
+Options -Indexes +FollowSymLinks
+DirectoryIndex index.php index.html
+
+# Block access to sensitive files
+<FilesMatch "^(config|bootstrap|setup-local|repair-database)\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Block error logs from being served
+<FilesMatch "^error_log$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Block .env, .git, .htaccess itself from being served
+<FilesMatch "^\.">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always unset X-Powered-By
+  Header always unset Server
+</IfModule>
+
+# Correct MIME types for PWA files
+<IfModule mod_mime.c>
+  AddType application/manifest+json .json
+  AddType application/javascript .js
+  AddType image/svg+xml .svg
+</IfModule>
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Block direct access to reset-admin.php unless from localhost
+RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
+RewriteCond %{REMOTE_ADDR} !^::1$
+RewriteRule ^reset-admin\.php$ - [F,L]
+
+# Allow direct access to real files/folders (assets, uploads, install.php)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Block sensitive paths
+RewriteRule ^(app|storage|database)/ - [F,L]
+
+# Front controller — all routes go to index.php
+RewriteRule ^ index.php [L,QSA]
+</IfModule>
