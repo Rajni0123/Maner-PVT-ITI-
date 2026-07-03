@@ -33,11 +33,6 @@ $pct10 = education_percentage(
     $admission['class_10th_total_marks'] ?? null,
     $admission['class_10th_percentage'] ?? null
 );
-$pct12 = education_percentage(
-    $admission['class_12th_marks_obtained'] ?? null,
-    $admission['class_12th_total_marks'] ?? null,
-    $admission['class_12th_percentage'] ?? null
-);
 $bankName = trim((string) ($scc['bank_name'] ?? ''));
 $logoText = $header['logo_text'] ?? 'MANER PRIVATE ITI';
 if ($logoText === 'Maner Pvt ITI') {
@@ -145,22 +140,9 @@ $misCode = \App\Models\SiteData::setting('mis_code', 'PR10001156');
             ['10th Board / School', $admission['class_10th_school']],
         ]); ?>
         <?php pf_row([
-            ['10th Subject', $admission['class_10th_subject']],
             ['10th Marks Obtained / Total', pf_marks($admission['class_10th_marks_obtained'] ?? null, $admission['class_10th_total_marks'] ?? null)],
-        ]); ?>
-        <?php pf_row([
             ['10th Percentage', $pct10],
-            ['12th Board / School', $admission['class_12th_school']],
         ]); ?>
-        <?php pf_row([
-            ['12th Subject', $admission['class_12th_subject']],
-            ['12th Marks Obtained / Total', pf_marks($admission['class_12th_marks_obtained'] ?? null, $admission['class_12th_total_marks'] ?? null)],
-        ]); ?>
-        <?php if ($pct12 !== '—'): ?>
-        <?php pf_row([
-            ['12th Percentage', $pct12, false, 'span-2'],
-        ]); ?>
-        <?php endif; ?>
       </div>
     </div>
 
