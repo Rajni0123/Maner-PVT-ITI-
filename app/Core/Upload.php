@@ -24,7 +24,7 @@ class Upload
             throw new \RuntimeException('File too large. Max ' . config('upload_max_mb') . 'MB.');
         }
 
-        $allowed = self::allowedExtensions();
+        $allowed = self::allowedExtensions($prefix);
         $ext = self::detectExtension($file);
         if ($ext === '' || !in_array($ext, $allowed, true)) {
             throw new \RuntimeException(
@@ -66,8 +66,13 @@ class Upload
     }
 
     /** @return list<string> */
-    private static function allowedExtensions(): array
+    private static function allowedExtensions(string $prefix = 'file'): array
     {
+        // Branding uploads: images only (no PDF)
+        if (in_array($prefix, ['favicon', 'applogo'], true)) {
+            return ['jpg', 'jpeg', 'png', 'webp', 'ico', 'gif'];
+        }
+
         $allowed = config('allowed_upload_ext', ['jpg', 'jpeg', 'png', 'webp', 'pdf']);
         if (!is_array($allowed) || $allowed === []) {
             $allowed = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
@@ -123,6 +128,7 @@ class Upload
             'image/png', 'image/x-png' => 'png',
             'image/webp' => 'webp',
             'image/gif' => 'gif',
+            'image/x-icon', 'image/vnd.microsoft.icon' => 'ico',
             'application/pdf', 'application/x-pdf', 'application/acrobat', 'applications/vnd.pdf', 'text/pdf' => 'pdf',
             default => '',
         };

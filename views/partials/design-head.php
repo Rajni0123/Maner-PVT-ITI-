@@ -16,9 +16,19 @@ $extraCss = $extraCss ?? [];
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="application-name" content="Maner ITI">
 <meta name="msapplication-TileColor" content="#131b2e">
-<link rel="manifest" href="<?= site_url('manifest.json') ?>">
-<link rel="apple-touch-icon" href="<?= asset('icons/icon.svg') ?>">
-<link rel="icon" type="image/svg+xml" href="<?= asset('icons/icon.svg') ?>">
+<?php
+$faviconUrl = site_favicon_url();
+$appLogoUrl = site_app_logo_url();
+$faviconFile = site_branding_file('site_favicon');
+$appLogoFile = site_branding_file('app_logo');
+$faviconType = $faviconFile !== '' ? branding_mime_type($faviconFile) : 'image/svg+xml';
+$appLogoType = $appLogoFile !== '' ? branding_mime_type($appLogoFile) : ($faviconFile !== '' ? branding_mime_type($faviconFile) : 'image/svg+xml');
+?>
+<link rel="manifest" href="<?= site_url('manifest.php') ?>">
+<link rel="icon" type="<?= e($faviconType) ?>" href="<?= e($faviconUrl) ?>">
+<link rel="shortcut icon" type="<?= e($faviconType) ?>" href="<?= e($faviconUrl) ?>">
+<link rel="apple-touch-icon" href="<?= e($appLogoUrl) ?>">
+<meta name="msapplication-TileImage" content="<?= e($appLogoUrl) ?>">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>

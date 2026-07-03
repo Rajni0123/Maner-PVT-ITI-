@@ -214,6 +214,23 @@ class AdminCmsController
                 Database::insert('site_settings', ['setting_key' => 'fee_structure_pdf', 'setting_value' => $feePdf]);
             }
         }
+
+        foreach (['site_favicon' => 'favicon', 'app_logo' => 'applogo'] as $settingKey => $prefix) {
+            try {
+                $uploaded = Upload::save($_FILES[$settingKey] ?? [], $prefix);
+            } catch (\Throwable $e) {
+                flash('error', $e->getMessage());
+                redirect('admin/settings');
+            }
+            if ($uploaded) {
+                $exists = Database::fetch('SELECT id FROM site_settings WHERE setting_key = ?', [$settingKey]);
+                if ($exists) {
+                    Database::update('site_settings', ['setting_value' => $uploaded], 'setting_key = ?', [$settingKey]);
+                } else {
+                    Database::insert('site_settings', ['setting_key' => $settingKey, 'setting_value' => $uploaded]);
+                }
+            }
+        }
         $header = [
             'phone' => $_POST['phone'] ?? '',
             'email' => $_POST['header_email'] ?? '',

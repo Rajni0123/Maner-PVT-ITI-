@@ -78,6 +78,52 @@ function asset(string $path): string
     return $url;
 }
 
+function site_branding_file(string $key): string
+{
+    try {
+        return trim(\App\Models\SiteData::setting($key, ''));
+    } catch (\Throwable $e) {
+        return '';
+    }
+}
+
+function site_favicon_url(): string
+{
+    $file = site_branding_file('site_favicon');
+    if ($file !== '' && upload_exists($file)) {
+        return upload_url($file);
+    }
+    return asset('icons/icon.svg');
+}
+
+function site_app_logo_url(): string
+{
+    $file = site_branding_file('app_logo');
+    if ($file !== '' && upload_exists($file)) {
+        return upload_url($file);
+    }
+    // Fall back to favicon, then default icon
+    $favicon = site_branding_file('site_favicon');
+    if ($favicon !== '' && upload_exists($favicon)) {
+        return upload_url($favicon);
+    }
+    return asset('icons/icon.svg');
+}
+
+function branding_mime_type(string $filename): string
+{
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    return match ($ext) {
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+        'ico' => 'image/x-icon',
+        'svg' => 'image/svg+xml',
+        default => 'image/png',
+    };
+}
+
 function menu_url(string $url): string
 {
     if ($url === '' || $url === '#') {

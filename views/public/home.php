@@ -79,9 +79,18 @@ $tradeCount = max(count($trades), 2);
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Maner ITI">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="<?= site_url('manifest.json') ?>">
-  <link rel="apple-touch-icon" href="<?= asset('icons/icon.svg') ?>">
-  <link rel="icon" type="image/svg+xml" href="<?= asset('icons/icon.svg') ?>">
+  <?php
+  $faviconUrl = site_favicon_url();
+  $appLogoUrl = site_app_logo_url();
+  $faviconFile = site_branding_file('site_favicon');
+  $appLogoFile = site_branding_file('app_logo');
+  $faviconType = $faviconFile !== '' ? branding_mime_type($faviconFile) : 'image/svg+xml';
+  ?>
+  <link rel="manifest" href="<?= site_url('manifest.php') ?>">
+  <link rel="icon" type="<?= e($faviconType) ?>" href="<?= e($faviconUrl) ?>">
+  <link rel="shortcut icon" type="<?= e($faviconType) ?>" href="<?= e($faviconUrl) ?>">
+  <link rel="apple-touch-icon" href="<?= e($appLogoUrl) ?>">
+  <meta name="msapplication-TileImage" content="<?= e($appLogoUrl) ?>">
   <link rel="stylesheet" href="<?= asset('css/design.css') ?>">
   <link rel="stylesheet" href="<?= asset('css/pwa.css') ?>">
   <script id="tailwind-config">

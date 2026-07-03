@@ -51,6 +51,34 @@
   </div>
   <div style="margin-top:1rem"><label>Principal Message</label><textarea name="settings[principal_message]"><?= e($settings['principal_message'] ?? '') ?></textarea></div>
 
+  <h3 style="margin-top:1.5rem">Website Branding</h3>
+  <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">
+    Favicon browser tab icon hai. App logo mobile web app / home screen icon ke liye use hota hai (PNG recommended, square).
+  </p>
+  <div class="form-grid">
+    <div>
+      <label>Website Favicon</label>
+      <?php if (!empty($settings['site_favicon']) && upload_exists($settings['site_favicon'])): ?>
+      <p style="margin:0 0 0.5rem">
+        <img src="<?= e(upload_url($settings['site_favicon'])) ?>" alt="Favicon" style="width:32px;height:32px;object-fit:contain;border:1px solid #ddd;background:#fff;padding:2px">
+        <a href="<?= e(upload_url($settings['site_favicon'])) ?>" target="_blank" style="margin-left:0.5rem">View current</a>
+      </p>
+      <?php endif; ?>
+      <input type="file" name="site_favicon" accept="image/png,image/jpeg,image/webp,image/x-icon,.ico,.png,.jpg,.jpeg,.webp">
+    </div>
+    <div>
+      <label>Web App Logo</label>
+      <?php if (!empty($settings['app_logo']) && upload_exists($settings['app_logo'])): ?>
+      <p style="margin:0 0 0.5rem">
+        <img src="<?= e(upload_url($settings['app_logo'])) ?>" alt="App logo" style="width:64px;height:64px;object-fit:contain;border:1px solid #ddd;background:#fff;padding:2px">
+        <a href="<?= e(upload_url($settings['app_logo'])) ?>" target="_blank" style="margin-left:0.5rem">View current</a>
+      </p>
+      <?php endif; ?>
+      <input type="file" name="app_logo" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp">
+      <small style="display:block;margin-top:0.35rem;color:var(--admin-on-surface-variant)">Square image best (512×512 PNG)</small>
+    </div>
+  </div>
+
   <h3 style="margin-top:1.5rem">Fee Structure</h3>
   <?php if (!empty($settings['fee_structure_pdf'])): ?>
   <p><a href="<?= e(upload_url($settings['fee_structure_pdf'])) ?>" target="_blank">Current Fee PDF</a></p>
