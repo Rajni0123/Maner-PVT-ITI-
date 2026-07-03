@@ -33,6 +33,9 @@ class Upload
             );
         }
 
+        // Verify real file content matches claimed extension (blocks polyglot / renamed malware)
+        self::assertContentMatchesExtension($file, $ext);
+
         $dir = upload_dir_path();
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
@@ -111,24 +114,21 @@ class Upload
         $ext = preg_replace('/[^a-z0-9]/', '', $ext) ?? '';
 
         // Map aliases
-        $aliases = [
-            'jfif' => 'jpg',
-            'jpe' => 'jpg',
-            'jpeg' => 'jpeg',
-        ];
-        if (isset($aliases[$ext])) {
-            // keep jpeg as jpeg, jfif as jpg for storage
-            if ($ext === 'jfif' || $ext === 'jpe') {
-                $ext = 'jpg';
-            }
+        if ($ext === 'jfif' || $ext === 'jpe') {
+            $ext = 'jpg';
         }
 
         if ($ext !== '') {
-            return $ext;
+            return $ext === 'jpeg' ? 'jpeg' : $ext;
         }
 
-        // Fallback: detect from MIME / file contents when extension missing
-        $mime = (string) ($file['type'] ?? '');
+        // Fallback: detect from file contents when extension missing
+        $mime = self::detectMime($file);
+        return self::extensionFromMime($mime);
+    }
+
+    private static function detectMime(array $file): string
+    {
         $tmp = (string) ($file['tmp_name'] ?? '');
         if ($tmp !== '' && is_file($tmp) && function_exists('finfo_open')) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -136,12 +136,16 @@ class Upload
                 $detected = finfo_file($finfo, $tmp) ?: '';
                 finfo_close($finfo);
                 if ($detected !== '') {
-                    $mime = $detected;
+                    return strtolower($detected);
                 }
             }
         }
+        return strtolower((string) ($file['type'] ?? ''));
+    }
 
-        return match (strtolower($mime)) {
+    private static function extensionFromMime(string $mime): string
+    {
+        return match ($mime) {
             'image/jpeg', 'image/jpg', 'image/pjpeg' => 'jpg',
             'image/png', 'image/x-png' => 'png',
             'image/webp' => 'webp',
@@ -150,6 +154,51 @@ class Upload
             'application/pdf', 'application/x-pdf', 'application/acrobat', 'applications/vnd.pdf', 'text/pdf' => 'pdf',
             default => '',
         };
+    }
+
+    private static function assertContentMatchesExtension(array $file, string $ext): void
+    {
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        if ($tmp === '' || !is_file($tmp)) {
+            throw new \RuntimeException('Invalid upload.');
+        }
+
+        $mime = self::detectMime($file);
+        $expected = match ($ext) {
+            'jpg', 'jpeg' => ['image/jpeg', 'image/jpg', 'image/pjpeg'],
+            'png' => ['image/png', 'image/x-png'],
+            'webp' => ['image/webp'],
+            'gif' => ['image/gif'],
+            'ico' => ['image/x-icon', 'image/vnd.microsoft.icon', 'image/ico'],
+            'pdf' => ['application/pdf', 'application/x-pdf', 'application/acrobat', 'applications/vnd.pdf', 'text/pdf'],
+            default => [],
+        };
+
+        if ($expected !== [] && $mime !== '' && !in_array($mime, $expected, true)) {
+            // Some hosts report application/octet-stream — fall through to magic-byte checks
+            if ($mime !== 'application/octet-stream') {
+                throw new \RuntimeException('File content does not match extension.');
+            }
+        }
+
+        $head = (string) @file_get_contents($tmp, false, null, 0, 16);
+        if (self::isImageExtension($ext) || $ext === 'jpeg') {
+            if (@getimagesize($tmp) === false && $ext !== 'ico') {
+                throw new \RuntimeException('Invalid image file.');
+            }
+        }
+
+        if ($ext === 'pdf') {
+            if (!str_starts_with($head, '%PDF')) {
+                throw new \RuntimeException('Invalid PDF file.');
+            }
+        }
+
+        // Block embedded PHP payloads in uploads
+        $sample = (string) @file_get_contents($tmp, false, null, 0, 8192);
+        if (preg_match('/<\?php|<\?=/i', $sample)) {
+            throw new \RuntimeException('File contains disallowed content.');
+        }
     }
 
     private static function uploadErrorMessage(int $code): string

@@ -1,8 +1,29 @@
 Options -Indexes +FollowSymLinks
 DirectoryIndex index.php index.html
 
-# Block access to sensitive files
-<FilesMatch "^(config|bootstrap|setup-local|repair-database)\.php$">
+# Block access to sensitive PHP / config files
+<FilesMatch "^(config(\.example)?|bootstrap|setup-local|repair-database)\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<FilesMatch "^(composer\.(json|lock)|package(-lock)?\.json)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# Block PHP backups / editor leftovers
+<FilesMatch "\.(bak|old|sql|log|ini|env)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -41,6 +62,8 @@ DirectoryIndex index.php index.html
   Header always set X-XSS-Protection "1; mode=block"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
   Header always unset X-Powered-By
   Header always unset Server
 </IfModule>
@@ -60,13 +83,20 @@ RewriteCond %{REMOTE_ADDR} !^127\.0\.0\.1$
 RewriteCond %{REMOTE_ADDR} !^::1$
 RewriteRule ^reset-admin\.php$ - [F,L]
 
-# Allow direct access to real files/folders (assets, uploads, install.php)
+# Block installer completely once site is installed
+RewriteCond %{DOCUMENT_ROOT}/storage/installed.lock -f
+RewriteRule ^install\.php$ - [F,L]
+
+# Block other setup / repair scripts from the web
+RewriteRule ^(setup-local|repair-database)\.php$ - [F,L]
+
+# Allow direct access to real files/folders (assets, uploads)
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
 # Block sensitive paths
-RewriteRule ^(app|storage|database)/ - [F,L]
+RewriteRule ^(app|storage|database|vendor)/ - [F,L]
 
 # Front controller — all routes go to index.php
 RewriteRule ^ index.php [L,QSA]

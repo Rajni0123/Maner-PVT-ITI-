@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/app/Core/helpers.php';
+require_once __DIR__ . '/app/Core/Security.php';
 require_once __DIR__ . '/app/Core/Database.php';
 require_once __DIR__ . '/app/Core/Auth.php';
 require_once __DIR__ . '/app/Core/View.php';
@@ -9,6 +10,8 @@ require_once __DIR__ . '/app/Core/CloudflareR2.php';
 require_once __DIR__ . '/app/Core/Mail.php';
 require_once __DIR__ . '/app/Core/Sms.php';
 require_once __DIR__ . '/app/Core/Router.php';
+
+\App\Core\Security::sendHeaders();
 
 // Controllers (explicit load — reliable on all shared hosts)
 require_once __DIR__ . '/app/Controllers/PublicController.php';
@@ -34,7 +37,8 @@ if (is_installed()) {
 
 session_name(config('session_name', 'maner_iti_session'));
 if (session_status() === PHP_SESSION_NONE) {
-    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
@@ -43,11 +47,18 @@ if (session_status() === PHP_SESSION_NONE) {
         'httponly' => true,
         'samesite' => 'Strict',
     ]);
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.cookie_httponly', '1');
     session_start();
+
+    \App\Core\Security::enforceSessionTimeout();
 
     if (!isset($_SESSION['_created'])) {
         $_SESSION['_created'] = time();
-    } elseif (time() - $_SESSION['_created'] > 1800) {
+        $_SESSION['_auth_started'] = time();
+        $_SESSION['_last_activity'] = time();
+    } elseif (time() - $_SESSION['_created'] > 900) {
         session_regenerate_id(true);
         $_SESSION['_created'] = time();
     }

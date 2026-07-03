@@ -1,42 +1,16 @@
 <?php
 /**
- * One-time installer — delete or protect after setup.
+ * One-time installer — blocked after setup.
  */
 require __DIR__ . '/bootstrap.php';
 
 if (is_installed()) {
-    $siteUrl = site_url();
-    $adminUrl = site_url('admin/login');
-    $pageTitle = 'Already Installed | Maner Private ITI';
-    $extraCss = ['install.css'];
-    ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<?php require base_path('views/partials/design-head.php'); ?>
-</head>
-<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col">
-<main class="flex-1 flex items-center justify-center p-gutter">
-  <div class="install-card install-done-card max-w-2xl w-full bg-surface-container-lowest border border-outline-variant p-8">
-    <div class="install-done-icon"><span class="material-symbols-outlined">check_circle</span></div>
-    <h1 class="font-headline-lg text-primary text-center">Site Already Installed</h1>
-    <p class="text-on-surface-variant text-center" style="margin:0.75rem 0 1.5rem">Website pehle se setup hai. Install dubara chalane ki zaroorat nahi.</p>
-    <div class="install-done-actions">
-      <a class="install-btn install-btn-primary" href="<?= e($siteUrl) ?>">Open Website</a>
-      <a class="install-btn install-btn-outline" href="<?= e($adminUrl) ?>">Admin Login</a>
-    </div>
-    <div class="install-alert install-alert-info" style="margin-top:1.5rem">
-      <span class="material-symbols-outlined">info</span>
-      <div>
-        <p style="margin:0 0 0.5rem"><strong>Password bhool gaye?</strong> <code>reset-admin.php</code> chalayein, phir file delete kar dena.</p>
-        <p style="margin:0"><strong>Reinstall</strong> ke liye server se <code>storage/installed.lock</code> delete karein.</p>
-      </div>
-    </div>
-  </div>
-</main>
-</body>
-</html>
-    <?php
+    http_response_code(403);
+    header('Content-Type: text/html; charset=utf-8');
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Forbidden</title></head><body>';
+    echo '<h1>Installer disabled</h1><p>This site is already installed.</p>';
+    echo '<p><a href="' . e(site_url()) . '">Go to website</a></p>';
+    echo '</body></html>';
     exit;
 }
 

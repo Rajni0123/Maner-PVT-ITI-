@@ -184,9 +184,17 @@ class AdminCmsController
         Auth::require();
         verify_csrf();
         foreach ($_POST['settings'] ?? [] as $key => $value) {
-            // Keep existing API secrets when password fields are left blank
-            if (in_array($key, ['sms_api_key', 'r2_secret_key'], true) && trim((string) $value) === '') {
+            $key = (string) $key;
+            if (!\App\Core\Security::isAllowedSettingKey($key)) {
                 continue;
+            }
+            // Keep existing API secrets when password fields are left blank
+            if (in_array($key, ['sms_api_key', 'r2_secret_key', 'r2_access_key'], true) && trim((string) $value) === '') {
+                continue;
+            }
+            $value = is_scalar($value) ? (string) $value : '';
+            if (strlen($value) > 10000) {
+                $value = substr($value, 0, 10000);
             }
             $exists = Database::fetch('SELECT id FROM site_settings WHERE setting_key = ?', [$key]);
             if ($exists) {

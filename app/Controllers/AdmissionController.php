@@ -24,6 +24,12 @@ class AdmissionController
     public static function checkUidai(): void
     {
         header('Content-Type: application/json');
+        $limit = \App\Core\Security::rateLimitHit('check_uidai', 30, 600);
+        if (!$limit['allowed']) {
+            http_response_code(429);
+            echo json_encode(['available' => false, 'message' => 'Too many checks. Please wait and try again.']);
+            return;
+        }
         $uidai = preg_replace('/\D/', '', $_GET['uidai'] ?? '');
         if (strlen($uidai) !== 12) {
             echo json_encode(['available' => false, 'message' => 'Invalid UIDAI number']);
@@ -41,6 +47,11 @@ class AdmissionController
     public static function submit(): void
     {
         verify_csrf();
+        $limit = \App\Core\Security::rateLimitHit('admission_submit', 5, 900);
+        if (!$limit['allowed']) {
+            flash('error', 'Too many admission submissions. Please try again later.');
+            redirect('apply-admission');
+        }
         $data = self::collectPost();
         $errors = self::validate($data);
 

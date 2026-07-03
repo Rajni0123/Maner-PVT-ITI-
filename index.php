@@ -142,7 +142,8 @@ $router->get('/contact', fn() => PublicController::contact());
 $router->get('/api/check-uidai', fn() => AdmissionController::checkUidai());
 $router->get('/health', function () {
     header('Content-Type: application/json');
-    echo json_encode(['ok' => true, 'app' => 'maner-iti-php', 'path' => request_path()]);
+    header('Cache-Control: no-store');
+    echo json_encode(['ok' => true]);
 });
 
 // Public POST

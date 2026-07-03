@@ -458,8 +458,9 @@ function csrf_field(): string
 
 function verify_csrf(): void
 {
-    $token = $_POST['_csrf'] ?? '';
-    if (!$token || !hash_equals($_SESSION['_csrf'] ?? '', $token)) {
+    $token = $_POST['_csrf'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    $sessionToken = $_SESSION['_csrf'] ?? '';
+    if ($token === '' || $sessionToken === '' || !hash_equals($sessionToken, (string) $token)) {
         http_response_code(403);
         die('Invalid security token. Please go back and try again.');
     }

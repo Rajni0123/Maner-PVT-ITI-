@@ -170,17 +170,30 @@ class PublicController
     public static function contactSubmit(): void
     {
         verify_csrf();
+
+        $limit = \App\Core\Security::rateLimitHit('contact_form', 8, 600);
+        if (!$limit['allowed']) {
+            flash('error', 'Too many messages. Please try again later.');
+            redirect('contact');
+        }
+
         ensure_contact_schema();
 
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-        $trade = trim($_POST['trade_interest'] ?? '');
-        $message = trim($_POST['message'] ?? '');
+        $name = mb_substr(trim($_POST['name'] ?? ''), 0, 120);
+        $email = mb_substr(trim($_POST['email'] ?? ''), 0, 190);
+        $phone = mb_substr(trim($_POST['phone'] ?? ''), 0, 20);
+        $trade = mb_substr(trim($_POST['trade_interest'] ?? ''), 0, 100);
+        $message = mb_substr(trim($_POST['message'] ?? ''), 0, 2000);
 
         if (!$name || !$email || !$phone || !$message) {
             set_old($_POST);
             flash('error', 'Please fill all required fields.');
+            redirect('contact');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            set_old($_POST);
+            flash('error', 'Please enter a valid email address.');
             redirect('contact');
         }
 
@@ -215,6 +228,13 @@ class PublicController
         if (!$token || !hash_equals($_SESSION['_csrf'] ?? '', $token)) {
             http_response_code(403);
             echo json_encode(['ok' => false, 'message' => 'Session expired. Please refresh the page and try again.']);
+            exit;
+        }
+
+        $limit = \App\Core\Security::rateLimitHit('newsletter', 10, 600);
+        if (!$limit['allowed']) {
+            http_response_code(429);
+            echo json_encode(['ok' => false, 'message' => 'Too many requests. Please try again later.']);
             exit;
         }
 

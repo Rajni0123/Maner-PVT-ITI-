@@ -16,41 +16,13 @@ class AdminAuthController
         View::render('admin/login', ['title' => 'Admin Login'], 'admin-auth');
     }
 
-    private static function isRateLimited(): bool
-    {
-        $maxAttempts = 5;
-        $lockoutSeconds = 300;
-        $attempts = $_SESSION['_login_attempts'] ?? 0;
-        $lastAttempt = $_SESSION['_login_last_attempt'] ?? 0;
-
-        if ($attempts >= $maxAttempts && (time() - $lastAttempt) < $lockoutSeconds) {
-            return true;
-        }
-
-        if ((time() - $lastAttempt) >= $lockoutSeconds) {
-            $_SESSION['_login_attempts'] = 0;
-        }
-
-        return false;
-    }
-
-    private static function recordFailedAttempt(): void
-    {
-        $_SESSION['_login_attempts'] = ($_SESSION['_login_attempts'] ?? 0) + 1;
-        $_SESSION['_login_last_attempt'] = time();
-    }
-
-    private static function clearLoginAttempts(): void
-    {
-        unset($_SESSION['_login_attempts'], $_SESSION['_login_last_attempt']);
-    }
-
     public static function login(): void
     {
         verify_csrf();
 
-        if (self::isRateLimited()) {
-            flash('error', 'Too many failed attempts. Please try again after 5 minutes.');
+        $limit = \App\Core\Security::rateLimit('admin_login', 5, 300);
+        if (!$limit['allowed']) {
+            flash('error', 'Too many failed attempts. Please try again after ' . (int) ceil($limit['retry_after'] / 60) . ' minute(s).');
             redirect('admin/login');
         }
 
@@ -58,12 +30,14 @@ class AdminAuthController
         $password = $_POST['password'] ?? '';
 
         if (Auth::attempt($email, $password)) {
-            self::clearLoginAttempts();
+            \App\Core\Security::clearRateLimit('admin_login');
             session_regenerate_id(true);
+            $_SESSION['_auth_started'] = time();
+            $_SESSION['_last_activity'] = time();
             redirect('admin');
         }
 
-        self::recordFailedAttempt();
+        \App\Core\Security::rateLimitHit('admin_login', 5, 300);
 
         try {
             $count = (int) (Database::fetch('SELECT COUNT(*) AS c FROM users')['c'] ?? 0);
@@ -82,6 +56,9 @@ class AdminAuthController
     public static function logout(): void
     {
         Auth::logout();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         session_regenerate_id(true);
         redirect('admin/login');
     }
@@ -143,8 +120,9 @@ class AdminAuthController
         ];
 
         if ($password !== '' || $passwordConfirm !== '') {
-            if (strlen($password) < 6) {
-                flash('error', 'Password must be at least 6 characters.');
+            $pwdError = \App\Core\Security::validatePasswordStrength($password);
+            if ($pwdError !== null) {
+                flash('error', $pwdError);
                 redirect('admin/profile');
             }
             if ($password !== $passwordConfirm) {

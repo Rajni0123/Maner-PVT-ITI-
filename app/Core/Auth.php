@@ -43,12 +43,17 @@ class Auth
 
     public static function check(): bool
     {
+        if (self::user() === null) {
+            return false;
+        }
+        Security::enforceSessionTimeout();
         return self::user() !== null;
     }
 
     public static function require(): void
     {
         if (!self::check()) {
+            flash('error', 'Please log in to continue. Your session may have expired.');
             redirect('admin/login');
         }
     }
@@ -68,7 +73,22 @@ class Auth
 
     public static function logout(): void
     {
-        unset($_SESSION['admin_user']);
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                (bool) $params['secure'],
+                (bool) $params['httponly']
+            );
+        }
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
     }
 
     public static function refreshUser(int $userId): void

@@ -60,6 +60,13 @@ class Database
 
     public static function insert(string $table, array $data): int
     {
+        Security::assertSafeIdentifier($table, 'table');
+        if ($data === []) {
+            throw new \InvalidArgumentException('Insert data cannot be empty');
+        }
+        foreach (array_keys($data) as $col) {
+            Security::assertSafeIdentifier((string) $col, 'column');
+        }
         $cols = implode(', ', array_keys($data));
         $placeholders = implode(', ', array_fill(0, count($data), '?'));
         self::query("INSERT INTO {$table} ({$cols}) VALUES ({$placeholders})", array_values($data));
@@ -68,6 +75,13 @@ class Database
 
     public static function update(string $table, array $data, string $where, array $whereParams = []): void
     {
+        Security::assertSafeIdentifier($table, 'table');
+        if ($data === []) {
+            throw new \InvalidArgumentException('Update data cannot be empty');
+        }
+        foreach (array_keys($data) as $col) {
+            Security::assertSafeIdentifier((string) $col, 'column');
+        }
         $sets = implode(', ', array_map(fn($k) => "{$k} = ?", array_keys($data)));
         self::query(
             "UPDATE {$table} SET {$sets} WHERE {$where}",
@@ -77,6 +91,7 @@ class Database
 
     public static function delete(string $table, string $where, array $params = []): void
     {
+        Security::assertSafeIdentifier($table, 'table');
         self::query("DELETE FROM {$table} WHERE {$where}", $params);
     }
 }
