@@ -1,12 +1,3 @@
-<!-- Security Warning Banner -->
-<div class="mb-6 flex items-center gap-3 bg-tertiary-container/5 border border-outline-variant p-4 rounded-lg">
-  <span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
-  <div>
-    <h4 class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-tight">Authorized Access Only</h4>
-    <p class="text-[11px] text-on-surface-variant leading-tight">This system is restricted to official Maner ITI administrators. Unlawful access will be prosecuted.</p>
-  </div>
-</div>
-
 <!-- Login Card -->
 <div class="bg-surface-container-lowest border border-outline-variant auth-card-shadow p-8 md:p-10 relative overflow-hidden">
   <div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
