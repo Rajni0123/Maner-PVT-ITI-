@@ -152,7 +152,11 @@ class Upload
             return basename($sourcePath);
         }
 
-        $image = self::applyExifOrientation($image, $sourcePath, $ext);
+        // Photos need EXIF orientation; signatures often already correct in pixel data
+        // and EXIF/auto-rotate was flipping them upside down.
+        if ($prefix !== 'signature') {
+            $image = self::applyExifOrientation($image, $sourcePath, $ext);
+        }
         if ($prefix === 'photo') {
             $image = self::cropPassportPhoto($image);
         } elseif ($prefix === 'signature') {
@@ -243,7 +247,7 @@ class Upload
     }
 
     /**
-     * Normalize signature images: fix portrait phone photos, scale up for print.
+     * Scale signature to a clear print size without rotating (avoids upside-down images).
      * @param \GdImage|resource $image
      * @return \GdImage|resource
      */
@@ -255,21 +259,10 @@ class Upload
             return $image;
         }
 
-        // Phone photos of signatures are often portrait — rotate to landscape
-        if ($height > ($width * 1.15)) {
-            $rotated = imagerotate($image, -90, imagecolorallocate($image, 255, 255, 255));
-            if ($rotated !== false) {
-                imagedestroy($image);
-                $image = $rotated;
-                $width = imagesx($image);
-                $height = imagesy($image);
-            }
-        }
-
-        // Target canvas for clear print signature (fills box, scales small images up)
-        $outW = 600;
-        $outH = 200;
-        $ratio = min($outW / max(1, $width), $outH / max(1, $height));
+        // Wide canvas so signature stays readable on admission form
+        $outW = 700;
+        $outH = 220;
+        $ratio = min($outW / $width, $outH / $height);
         $newW = max(1, (int) round($width * $ratio));
         $newH = max(1, (int) round($height * $ratio));
 
