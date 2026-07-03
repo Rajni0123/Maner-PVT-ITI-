@@ -302,19 +302,38 @@ $navActive = 'admission';
                 <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="shift" value="<?= e(old('shift')) ?>" type="text" placeholder="Optional"/>
               </div>
               <div class="space-y-2">
-                <label class="font-bold text-sm block">Student Credit Card</label>
-                <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card">
+                <label class="font-bold text-sm block">BSCC (Student Credit Card)</label>
+                <select class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card" id="student_credit_card">
                   <option value="No" <?= old('student_credit_card', 'No') === 'No' ? 'selected' : '' ?>>No</option>
                   <option value="Yes" <?= old('student_credit_card') === 'Yes' ? 'selected' : '' ?>>Yes</option>
                 </select>
               </div>
-              <div class="space-y-2">
-                <label class="font-bold text-sm block">Bank Name (if SCC)</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_bank" value="<?= e(old('student_credit_card_bank')) ?>" type="text"/>
-              </div>
-              <div class="space-y-2 md:col-span-2">
-                <label class="font-bold text-sm block">Account No (if SCC)</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_account" value="<?= e(old('student_credit_card_account')) ?>" type="text"/>
+            </div>
+
+            <div id="bscc_details_box" class="border border-outline-variant bg-surface-container-low p-6 space-y-4 <?= old('student_credit_card') === 'Yes' ? '' : 'hidden' ?>">
+              <h3 class="font-headline-md text-primary">BSCC Bank Account Details</h3>
+              <p class="text-sm text-on-surface-variant">BSCC Yes select karne par bank details bharna zaroori hai.</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Bank Name *</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_bank" id="student_credit_card_bank" value="<?= e(old('student_credit_card_bank')) ?>" type="text"/>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Account Holder Name</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_holder" value="<?= e(old('student_credit_card_holder')) ?>" type="text"/>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Account Number *</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_account" id="student_credit_card_account" value="<?= e(old('student_credit_card_account')) ?>" type="text"/>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">IFSC Code</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_ifsc" value="<?= e(old('student_credit_card_ifsc')) ?>" type="text"/>
+                </div>
+                <div class="space-y-2">
+                  <label class="font-bold text-sm block">Branch Name</label>
+                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_branch" value="<?= e(old('student_credit_card_branch')) ?>" type="text"/>
+                </div>
               </div>
             </div>
 

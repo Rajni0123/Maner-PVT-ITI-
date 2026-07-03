@@ -180,4 +180,23 @@ document.querySelectorAll('input[name="trade"]').forEach((radio) => {
   });
 });
 
+// BSCC bank details toggle
+(function () {
+  const bsccSelect = document.getElementById('student_credit_card');
+  const bsccBox = document.getElementById('bscc_details_box');
+  const bankInput = document.getElementById('student_credit_card_bank');
+  const accountInput = document.getElementById('student_credit_card_account');
+  if (!bsccSelect || !bsccBox) return;
+
+  function toggleBscc() {
+    const show = bsccSelect.value === 'Yes';
+    bsccBox.classList.toggle('hidden', !show);
+    if (bankInput) bankInput.required = show;
+    if (accountInput) accountInput.required = show;
+  }
+
+  bsccSelect.addEventListener('change', toggleBscc);
+  toggleBscc();
+})();
+
 updateForm();

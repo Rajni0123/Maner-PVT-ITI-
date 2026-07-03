@@ -33,13 +33,11 @@
 
   function uppercaseField(el) {
     if (!el || ADMISSION_SKIP_UPPERCASE[el.name]) return;
+    // Never force-uppercase <select> values — option values are case-sensitive
+    // (e.g. "Electrician", "Yes") and uppercasing clears the selection.
+    if (el.tagName === 'SELECT') return;
     if (el.type === 'file' || el.type === 'date' || el.type === 'number' || el.type === 'tel') return;
-
-    if (el.tagName === 'SELECT') {
-      if (el.value) el.value = el.value.toUpperCase();
-      return;
-    }
-
+    if (el.type === 'radio' || el.type === 'checkbox') return;
     if (el.type !== 'text' && el.type !== 'email' && el.tagName !== 'TEXTAREA') return;
 
     var pos = el.selectionStart;
@@ -64,15 +62,8 @@
       uppercaseField(el);
     });
 
-    form.querySelectorAll('select').forEach(function (el) {
-      if (ADMISSION_SKIP_UPPERCASE[el.name]) return;
-      el.addEventListener('change', function () {
-        uppercaseField(el);
-      });
-    });
-
     form.addEventListener('submit', function () {
-      form.querySelectorAll('input[type="text"], input[type="email"], textarea, select').forEach(function (el) {
+      form.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(function (el) {
         uppercaseField(el);
       });
     });

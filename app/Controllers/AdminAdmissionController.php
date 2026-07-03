@@ -174,6 +174,9 @@ class AdminAdmissionController
             'student_credit_card' => trim($_POST['student_credit_card'] ?? 'No'),
             'student_credit_card_bank' => trim($_POST['student_credit_card_bank'] ?? ''),
             'student_credit_card_account' => trim($_POST['student_credit_card_account'] ?? ''),
+            'student_credit_card_holder' => trim($_POST['student_credit_card_holder'] ?? ''),
+            'student_credit_card_ifsc' => trim($_POST['student_credit_card_ifsc'] ?? ''),
+            'student_credit_card_branch' => trim($_POST['student_credit_card_branch'] ?? ''),
         ];
         $status = ucfirst(strtolower(trim($_POST['status'] ?? 'Pending')));
         if (!in_array($status, ['Pending', 'Approved', 'Rejected'], true)) {
@@ -196,6 +199,12 @@ class AdminAdmissionController
         if ($data['session'] === '') {
             $errors[] = 'Session is required.';
         }
+        $isBscc = strcasecmp($data['student_credit_card'], 'Yes') === 0;
+        if ($isBscc) {
+            if ($data['student_credit_card_bank'] === '' || $data['student_credit_card_account'] === '') {
+                $errors[] = 'BSCC bank name and account number are required when BSCC is Yes.';
+            }
+        }
 
         if ($errors) {
             flash('error', implode(' ', $errors));
@@ -211,6 +220,7 @@ class AdminAdmissionController
         }
 
         $data = normalize_admission_fields($data);
+        $data['student_credit_card'] = $isBscc ? 'Yes' : 'No';
 
         try {
             $photo = \App\Core\Upload::save($_FILES['photo'] ?? [], 'photo');
@@ -227,10 +237,13 @@ class AdminAdmissionController
             ]);
 
             $sccDetails = null;
-            if ($data['student_credit_card'] === 'Yes') {
+            if ($isBscc) {
                 $sccDetails = json_encode([
                     'bank_name' => $data['student_credit_card_bank'],
+                    'account_holder' => $data['student_credit_card_holder'],
                     'account_number' => $data['student_credit_card_account'],
+                    'ifsc' => strtoupper($data['student_credit_card_ifsc']),
+                    'branch' => $data['student_credit_card_branch'],
                 ]);
             }
 

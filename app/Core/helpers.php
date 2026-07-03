@@ -127,11 +127,11 @@ function uppercase_admission_value(?string $value): string
 function admission_uppercase_fields(): array
 {
     return [
-        'name', 'father_name', 'mother_name', 'email', 'gender', 'category',
+        'name', 'father_name', 'mother_name', 'email',
         'village_town_city', 'nearby', 'police_station', 'post_office', 'district',
-        'block', 'state', 'pwd_category', 'pwd_claim', 'trade', 'session', 'shift',
+        'block', 'state', 'pwd_category', 'trade', 'session', 'shift',
         'class_10th_school', 'class_10th_subject', 'class_12th_school', 'class_12th_subject',
-        'student_credit_card', 'student_credit_card_bank', 'registration_type', 'qualification',
+        'student_credit_card_bank', 'registration_type', 'qualification',
     ];
 }
 

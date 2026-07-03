@@ -36,22 +36,38 @@
     </div>
   </div>
 
+  <?php
+  $tradeOptions = $trades ?? [];
+  if (!$tradeOptions) {
+      $tradeOptions = [
+          ['name' => 'Electrician'],
+          ['name' => 'Fitter'],
+      ];
+  }
+  $sessionOptions = $sessions ?? [];
+  if (!$sessionOptions) {
+      $sessionOptions = [
+          ['session_name' => '2026-28'],
+          ['session_name' => '2025-27'],
+      ];
+  }
+  ?>
   <h3 style="margin-top:1.5rem">Course Details</h3>
   <div class="form-grid">
     <div>
       <label>Trade *</label>
-      <select name="trade" required>
+      <select name="trade" id="trade" required>
         <option value="">Select trade</option>
-        <?php foreach ($trades as $t): ?>
+        <?php foreach ($tradeOptions as $t): ?>
         <option value="<?= e($t['name']) ?>"><?= e($t['name']) ?></option>
         <?php endforeach; ?>
       </select>
     </div>
     <div>
       <label>Session *</label>
-      <select name="session" required>
+      <select name="session" id="session" required>
         <option value="">Select session</option>
-        <?php foreach ($sessions as $s): ?>
+        <?php foreach ($sessionOptions as $s): ?>
         <option value="<?= e($s['session_name']) ?>"><?= e($s['session_name']) ?></option>
         <?php endforeach; ?>
       </select>
@@ -75,20 +91,43 @@
         <option value="Yes">Yes</option>
       </select>
     </div>
-    <div id="bscc_fields" style="display:none">
-      <label>BSCC Bank Name</label>
-      <input name="student_credit_card_bank" placeholder="Bank name">
-    </div>
-    <div id="bscc_account_field" style="display:none">
-      <label>BSCC Account Number</label>
-      <input name="student_credit_card_account" placeholder="Account number">
-    </div>
     <div>
       <label>PWD Claim</label>
       <select name="pwd_claim">
         <option value="No">No</option>
         <option value="Yes">Yes</option>
       </select>
+    </div>
+  </div>
+
+  <div id="bscc_details_box" class="card" style="display:none;margin-top:1rem;background:var(--admin-surface-container-low);border:1px solid var(--admin-outline-variant)">
+    <h4 style="margin:0 0 0.75rem">BSCC Bank Account Details</h4>
+    <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">Student Credit Card select karne par bank details bharna zaroori hai.</p>
+    <div class="form-grid">
+      <div>
+        <label>Bank Name *</label>
+        <input name="student_credit_card_bank" id="student_credit_card_bank" placeholder="e.g. State Bank of India">
+      </div>
+      <div>
+        <label>Account Holder Name</label>
+        <input name="student_credit_card_holder" id="student_credit_card_holder" placeholder="As per bank passbook">
+      </div>
+      <div>
+        <label>Account Number *</label>
+        <input name="student_credit_card_account" id="student_credit_card_account" placeholder="Account number">
+      </div>
+      <div>
+        <label>IFSC Code</label>
+        <input name="student_credit_card_ifsc" id="student_credit_card_ifsc" placeholder="e.g. SBIN0001234">
+      </div>
+      <div>
+        <label>Branch Name</label>
+        <input name="student_credit_card_branch" id="student_credit_card_branch" placeholder="Branch">
+      </div>
+      <div id="bscc_doc_field">
+        <label>BSCC Document</label>
+        <input type="file" name="student_credit_card_doc" accept="image/*,.pdf">
+      </div>
     </div>
   </div>
 
@@ -119,7 +158,6 @@
     <div><label>Signature</label><input type="file" name="signature" accept="image/*"></div>
     <div><label>Aadhaar</label><input type="file" name="aadhaar" accept="image/*,.pdf"></div>
     <div><label>10th Marksheet</label><input type="file" name="marksheet" accept="image/*,.pdf"></div>
-    <div id="bscc_doc_field" style="display:none"><label>BSCC Document</label><input type="file" name="student_credit_card_doc" accept="image/*,.pdf"></div>
   </div>
 
   <button class="btn btn-primary" style="margin-top:1.5rem">Save Admission</button>
@@ -128,16 +166,29 @@
 <script src="<?= asset('js/form-utils.js') ?>"></script>
 <script>
 (function () {
-  const bsccSelect = document.getElementById('student_credit_card');
-  const bsccFields = document.getElementById('bscc_fields');
-  const bsccAccount = document.getElementById('bscc_account_field');
-  const bsccDoc = document.getElementById('bscc_doc_field');
+  var bsccSelect = document.getElementById('student_credit_card');
+  var bsccBox = document.getElementById('bscc_details_box');
+  var bankInput = document.getElementById('student_credit_card_bank');
+  var accountInput = document.getElementById('student_credit_card_account');
+
   function toggleBscc() {
-    const show = bsccSelect && bsccSelect.value === 'Yes';
-    if (bsccFields) bsccFields.style.display = show ? '' : 'none';
-    if (bsccAccount) bsccAccount.style.display = show ? '' : 'none';
-    if (bsccDoc) bsccDoc.style.display = show ? '' : 'none';
+    if (!bsccSelect || !bsccBox) return;
+    var show = bsccSelect.value === 'Yes';
+    bsccBox.style.display = show ? 'block' : 'none';
+    if (bankInput) bankInput.required = show;
+    if (accountInput) accountInput.required = show;
+    if (!show) {
+      if (bankInput) bankInput.value = '';
+      if (accountInput) accountInput.value = '';
+      var holder = document.getElementById('student_credit_card_holder');
+      var ifsc = document.getElementById('student_credit_card_ifsc');
+      var branch = document.getElementById('student_credit_card_branch');
+      if (holder) holder.value = '';
+      if (ifsc) ifsc.value = '';
+      if (branch) branch.value = '';
+    }
   }
+
   if (bsccSelect) {
     bsccSelect.addEventListener('change', toggleBscc);
     toggleBscc();

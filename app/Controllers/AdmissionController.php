@@ -77,7 +77,10 @@ class AdmissionController
             if (($data['student_credit_card'] ?? '') === 'Yes') {
                 $sccDetails = json_encode([
                     'bank_name' => $data['student_credit_card_bank'] ?? '',
+                    'account_holder' => $data['student_credit_card_holder'] ?? '',
                     'account_number' => $data['student_credit_card_account'] ?? '',
+                    'ifsc' => strtoupper($data['student_credit_card_ifsc'] ?? ''),
+                    'branch' => $data['student_credit_card_branch'] ?? '',
                 ]);
             }
 
@@ -173,6 +176,7 @@ class AdmissionController
             'class_10th_percentage', 'class_10th_subject', 'class_12th_school', 'class_12th_marks_obtained',
             'class_12th_total_marks', 'class_12th_percentage', 'class_12th_subject',
             'student_credit_card', 'student_credit_card_bank', 'student_credit_card_account',
+            'student_credit_card_holder', 'student_credit_card_ifsc', 'student_credit_card_branch',
         ];
         $out = [];
         foreach ($fields as $f) {
@@ -191,7 +195,9 @@ class AdmissionController
                 $out['class_12th_percentage'] = $calc12;
             }
         }
-        return normalize_admission_fields($out);
+        $out = normalize_admission_fields($out);
+        $out['student_credit_card'] = strcasecmp($out['student_credit_card'] ?? 'No', 'Yes') === 0 ? 'Yes' : 'No';
+        return $out;
     }
 
     private static function validate(array $d): array
@@ -205,6 +211,11 @@ class AdmissionController
         if (!$d['village_town_city'] || !$d['district'] || !$d['pincode']) $errors[] = 'Complete address required.';
         if (!empty($d['uidai_number']) && strlen(preg_replace('/\D/', '', $d['uidai_number'])) !== 12) {
             $errors[] = 'UIDAI must be 12 digits.';
+        }
+        if (($d['student_credit_card'] ?? 'No') === 'Yes') {
+            if (($d['student_credit_card_bank'] ?? '') === '' || ($d['student_credit_card_account'] ?? '') === '') {
+                $errors[] = 'BSCC bank name and account number are required.';
+            }
         }
         if (empty($_POST['declaration'])) $errors[] = 'Accept declaration.';
         return $errors;
