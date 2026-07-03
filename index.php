@@ -49,7 +49,7 @@ if (preg_match('#^/admin/admissions/documents/(\d+)$#', $uri, $m) && $method ===
     exit;
 }
 if (preg_match('#^/admin/admissions/print/(\d+)$#', $uri, $m) && $method === 'GET') {
-    AdmissionController::print((int) $m[1]);
+    AdminAdmissionController::printForm((int) $m[1]);
     exit;
 }
 if (preg_match('#^/admin/students/view/(\d+)$#', $uri, $m) && $method === 'GET') {

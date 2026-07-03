@@ -126,13 +126,41 @@ function branding_mime_type(string $filename): string
 
 function menu_url(string $url): string
 {
+    $url = trim($url);
     if ($url === '' || $url === '#') {
+        return '#';
+    }
+    // Block dangerous schemes (javascript:, data:, vbscript:, etc.)
+    if (preg_match('#^\s*(javascript|data|vbscript|file):#i', $url)) {
         return '#';
     }
     if (preg_match('#^https?://#i', $url)) {
         return $url;
     }
+    // Relative paths only — no protocol-relative //evil.com
+    if (str_starts_with($url, '//')) {
+        return '#';
+    }
     return site_url(ltrim($url, '/'));
+}
+
+/** Sanitize CMS-stored external/internal links for href attributes */
+function safe_href(string $url): string
+{
+    $url = trim($url);
+    if ($url === '') {
+        return '#';
+    }
+    if (preg_match('#^\s*(javascript|data|vbscript|file):#i', $url)) {
+        return '#';
+    }
+    if (preg_match('#^https?://#i', $url) || str_starts_with($url, '/') || str_starts_with($url, '#')) {
+        return $url;
+    }
+    if (str_starts_with($url, '//')) {
+        return '#';
+    }
+    return menu_url($url);
 }
 
 function nav_key_from_menu_url(string $url): string

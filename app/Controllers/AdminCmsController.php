@@ -44,6 +44,7 @@ class AdminCmsController
     public static function noticeDelete(int $id): void
     {
         Auth::require();
+        verify_csrf();
         Database::delete('notices', 'id = ?', [$id]);
         flash('success', 'Deleted.');
         redirect('admin/notices');
@@ -79,6 +80,7 @@ class AdminCmsController
     public static function galleryDelete(int $id): void
     {
         Auth::require();
+        verify_csrf();
         Database::delete('gallery', 'id = ?', [$id]);
         redirect('admin/gallery');
     }
@@ -126,6 +128,7 @@ class AdminCmsController
     public static function resultDelete(int $id): void
     {
         Auth::require();
+        verify_csrf();
         Database::delete('results', 'id = ?', [$id]);
         redirect('admin/results');
     }

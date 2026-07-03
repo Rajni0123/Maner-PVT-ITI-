@@ -17,8 +17,8 @@ $footerPhone = $footer['phone'] ?? $header['phone'] ?? '+91 91554 01839';
 $footerEmail = $footer['email'] ?? $header['email'] ?? 'info@maneriti.com';
 $copyright = $footer['copyright_text'] ?? '© 2024 Maner Private ITI. All Rights Reserved.';
 $misCode = $settings['mis_code'] ?? 'PR10001156';
-$privacyUrl = $footer['privacy_link'] ?? site_url('contact');
-$termsUrl = $footer['terms_link'] ?? site_url('contact');
+$privacyUrl = safe_href($footer['privacy_link'] ?? site_url('contact'));
+$termsUrl = safe_href($footer['terms_link'] ?? site_url('contact'));
 $newsletterEnabled = newsletter_enabled();
 $newsletterTitle = trim($settings['newsletter_title'] ?? '') ?: 'Join Our Newsletter';
 $newsletterPlaceholder = trim($settings['newsletter_placeholder'] ?? '') ?: 'Email Address';
@@ -54,13 +54,13 @@ if (empty($quickLinks)) {
 </div>
 <p class="font-body-md text-body-md text-on-primary-container leading-relaxed"><?= e($footerAbout) ?></p>
 <div class="flex gap-4">
-<a class="w-10 h-10 rounded-full border border-on-primary-container flex items-center justify-center hover:bg-secondary-container hover:text-primary-container hover:border-secondary-container transition-all duration-300" href="<?= e($socialWeb ?: '#') ?>" target="_blank" rel="noopener">
+<a class="w-10 h-10 rounded-full border border-on-primary-container flex items-center justify-center hover:bg-secondary-container hover:text-primary-container hover:border-secondary-container transition-all duration-300" href="<?= e(safe_href($socialWeb ?: '#')) ?>" target="_blank" rel="noopener">
 <span class="material-symbols-outlined text-[20px]">public</span>
 </a>
-<a class="w-10 h-10 rounded-full border border-on-primary-container flex items-center justify-center hover:bg-secondary-container hover:text-primary-container hover:border-secondary-container transition-all duration-300" href="<?= e($socialVideo ?: '#') ?>" target="_blank" rel="noopener">
+<a class="w-10 h-10 rounded-full border border-on-primary-container flex items-center justify-center hover:bg-secondary-container hover:text-primary-container hover:border-secondary-container transition-all duration-300" href="<?= e(safe_href($socialVideo ?: '#')) ?>" target="_blank" rel="noopener">
 <span class="material-symbols-outlined text-[20px]">video_library</span>
 </a>
-<a class="w-10 h-10 rounded-full border border-on-primary-container flex items-center justify-center hover:bg-secondary-container hover:text-primary-container hover:border-secondary-container transition-all duration-300" href="<?= e($socialGroups ?: '#') ?>" target="_blank" rel="noopener">
+<a class="w-10 h-10 rounded-full border border-on-primary-container flex items-center justify-center hover:bg-secondary-container hover:text-primary-container hover:border-secondary-container transition-all duration-300" href="<?= e(safe_href($socialGroups ?: '#')) ?>" target="_blank" rel="noopener">
 <span class="material-symbols-outlined text-[20px]">groups</span>
 </a>
 </div>

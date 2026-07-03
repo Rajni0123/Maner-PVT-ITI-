@@ -169,6 +169,19 @@ class AdmissionController
 
     public static function print(int $id): void
     {
+        // Public print only for the applicant's own just-submitted application (session-bound).
+        // Admin print must go through AdminAdmissionController::printForm().
+        $sessionId = (int) ($_SESSION['last_application_id'] ?? 0);
+        if ($sessionId !== $id) {
+            http_response_code(403);
+            die('Access denied. You can only print your own application from the success page.');
+        }
+        self::renderPrintForm($id);
+    }
+
+    /** @internal Used by admin print after Auth::require() */
+    public static function renderPrintForm(int $id): void
+    {
         $admission = Database::fetch('SELECT * FROM admissions WHERE id = ?', [$id]);
         if (!$admission) {
             http_response_code(404);

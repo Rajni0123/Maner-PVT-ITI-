@@ -162,7 +162,10 @@
     </div>
     <div><label>R2 Account ID</label><input name="settings[r2_account_id]" value="<?= e($settings['r2_account_id'] ?? '') ?>" placeholder="Cloudflare Account ID"></div>
     <div><label>R2 Access Key ID</label><input name="settings[r2_access_key]" value="<?= e($settings['r2_access_key'] ?? '') ?>" autocomplete="off"></div>
-    <div><label>R2 Secret Access Key</label><input name="settings[r2_secret_key]" type="password" value="<?= e($settings['r2_secret_key'] ?? '') ?>" autocomplete="new-password"></div>
+    <div>
+      <label>R2 Secret Access Key</label>
+      <input name="settings[r2_secret_key]" type="password" value="" autocomplete="new-password" placeholder="<?= !empty($settings['r2_secret_key']) ? '•••••••• (saved — leave blank to keep)' : 'R2 secret key' ?>">
+    </div>
     <div><label>R2 Bucket Name</label><input name="settings[r2_bucket]" value="<?= e($settings['r2_bucket'] ?? '') ?>" placeholder="maner-iti-docs"></div>
     <div><label>R2 Public URL</label><input name="settings[r2_public_url]" value="<?= e($settings['r2_public_url'] ?? '') ?>" placeholder="https://pub-xxxxx.r2.dev"></div>
     <div><label>R2 Folder Prefix</label><input name="settings[r2_prefix]" value="<?= e($settings['r2_prefix'] ?? 'uploads') ?>" placeholder="uploads"></div>

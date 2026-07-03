@@ -48,6 +48,12 @@ class AdminAdmissionController
         ], 'admin');
     }
 
+    public static function printForm(int $id): void
+    {
+        Auth::require();
+        AdmissionController::renderPrintForm($id);
+    }
+
     public static function documentsSave(int $id): void
     {
         Auth::require();
