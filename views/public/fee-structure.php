@@ -117,12 +117,18 @@ $navActive = 'admission';
         <h2 class="font-headline-lg text-headline-lg text-primary mb-2">सरकार द्वारा निर्धारित कोर्स शुल्क / Fee</h2>
         <p class="font-body-md text-on-surface-variant">FOR SESSION AUG 2026 – 2028</p>
       </div>
-      <?php if ($pdfUrl): ?>
-      <a href="<?= e($pdfUrl) ?>" target="_blank" class="border border-primary text-primary px-4 py-2 flex items-center gap-2 hover:bg-primary-container hover:text-white transition-colors">
-        <span class="material-symbols-outlined">download</span>
-        Download Fee PDF
-      </a>
-      <?php endif; ?>
+      <div class="flex flex-wrap gap-3">
+        <a href="<?= site_url('fee-structure/pdf') ?>" target="_blank" class="border border-primary text-primary px-4 py-2 flex items-center gap-2 hover:bg-primary-container hover:text-white transition-colors">
+          <span class="material-symbols-outlined">picture_as_pdf</span>
+          Download Fee PDF
+        </a>
+        <?php if ($pdfUrl): ?>
+        <a href="<?= e($pdfUrl) ?>" target="_blank" class="border border-outline text-on-surface-variant px-4 py-2 flex items-center gap-2 hover:border-primary hover:text-primary transition-colors">
+          <span class="material-symbols-outlined">download</span>
+          Uploaded PDF
+        </a>
+        <?php endif; ?>
+      </div>
     </div>
 
     <div class="bg-white border border-outline-variant overflow-hidden mb-12">

@@ -121,6 +121,15 @@ class PublicController
         ], '');
     }
 
+    public static function feeStructurePdf(): void
+    {
+        View::render('print/fee-structure', [
+            'title' => 'Fee Structure PDF | Maner Private ITI',
+            'header' => SiteData::header(),
+            'settings' => SiteData::settings(),
+        ], 'print');
+    }
+
     public static function faculty(): void
     {
         $faculty = Database::fetchAll('SELECT * FROM faculty WHERE is_active = 1 ORDER BY is_principal DESC, display_order');
