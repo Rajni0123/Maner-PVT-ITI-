@@ -276,46 +276,46 @@ $tradeCount = max(count($trades), 2);
   </section>
 
   <!-- BSCC Banner Section -->
-  <section id="bscc" class="bg-primary-container py-section-gap overflow-hidden relative" data-animate="fade-up">
+  <section id="bscc" class="bg-primary-container py-12 md:py-16 overflow-hidden relative" data-animate="fade-up">
     <div class="absolute right-0 top-0 w-1/3 h-full opacity-10 pointer-events-none">
-      <span class="material-symbols-outlined text-[300px]">account_balance</span>
+      <span class="material-symbols-outlined text-[180px]">account_balance</span>
     </div>
-    <div class="px-gutter max-w-container-max mx-auto relative z-10">
-      <div class="bscc-gradient p-12 md:p-20 border border-on-tertiary-container shadow-2xl flex flex-col md:flex-row items-center gap-12">
+    <div class="px-gutter max-w-4xl mx-auto relative z-10">
+      <div class="bscc-gradient p-6 md:p-8 border border-on-tertiary-container shadow-xl flex flex-col md:flex-row items-center gap-6 md:gap-8">
         <div class="flex-1">
-          <div class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-4 py-1 font-label-sm mb-6">
+          <div class="inline-flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-0.5 font-label-sm mb-3">
             <span class="material-symbols-outlined text-sm">verified</span>
             OFFICIAL BIHAR GOVT. SCHEME
           </div>
-          <h2 class="font-display text-display text-white mb-6">Bihar Student Credit Card (BSCC) Accepted</h2>
-          <p class="text-tertiary-fixed text-body-lg mb-8 max-w-2xl">
+          <h2 class="font-headline-md text-headline-md text-white mb-3">Bihar Student Credit Card (BSCC) Accepted</h2>
+          <p class="text-tertiary-fixed font-body-md text-body-md mb-4 max-w-xl">
             Unlock your future without financial barriers. Get up to <strong class="text-secondary-fixed">₹4 Lakh credit limit</strong> with zero interest for girls and 4% for boys under the MNSSBY scheme.
           </p>
-          <ul class="space-y-4 mb-10">
-            <li class="flex items-center gap-3 text-white">
-              <span class="material-symbols-outlined text-secondary-fixed">check_circle</span>
+          <ul class="space-y-2 mb-5">
+            <li class="flex items-center gap-2 text-white text-sm">
+              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">check_circle</span>
               Easy online documentation support
             </li>
-            <li class="flex items-center gap-3 text-white">
-              <span class="material-symbols-outlined text-secondary-fixed">check_circle</span>
+            <li class="flex items-center gap-2 text-white text-sm">
+              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">check_circle</span>
               Zero processing fees for all applicants
             </li>
-            <li class="flex items-center gap-3 text-white">
-              <span class="material-symbols-outlined text-secondary-fixed">check_circle</span>
+            <li class="flex items-center gap-2 text-white text-sm">
+              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">check_circle</span>
               Covers Tuition, Books, and Hostel fees
             </li>
           </ul>
-          <a href="<?= site_url('bscc-info') ?>" class="inline-block bg-white text-primary px-10 py-4 font-bold rounded-lg hover:bg-secondary-fixed transition-colors">
+          <a href="<?= site_url('bscc-info') ?>" class="inline-block bg-white text-primary px-6 py-2.5 text-sm font-bold rounded-lg hover:bg-secondary-fixed transition-colors">
             Check Eligibility
           </a>
         </div>
-        <div class="w-full md:w-80 bg-white/5 backdrop-blur-md p-8 border border-white/20 rounded-xl text-center">
-          <div class="mb-4">
-            <span class="material-symbols-outlined text-6xl text-secondary-fixed">payments</span>
+        <div class="w-full md:w-52 bg-white/5 backdrop-blur-md p-5 border border-white/20 rounded-xl text-center shrink-0">
+          <div class="mb-2">
+            <span class="material-symbols-outlined text-4xl text-secondary-fixed">payments</span>
           </div>
           <div class="font-label-sm text-tertiary-fixed mb-1 uppercase">Max Credit Limit</div>
-          <div class="font-display text-display text-white mb-4">₹4.0L</div>
-          <p class="text-white/60 text-sm">Valid for the academic year 2026-2028 admissions.</p>
+          <div class="font-headline-md text-headline-md text-white mb-2">₹4.0L</div>
+          <p class="text-white/60 text-xs">Valid for the academic year 2026-2028 admissions.</p>
         </div>
       </div>
     </div>
