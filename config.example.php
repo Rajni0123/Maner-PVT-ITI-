@@ -26,4 +26,15 @@ return array (
   'upload_image_max_height' => 1600,
   'session_name' => 'maner_iti_session',
   'installed_lock' => '',
+
+  // Document storage: 'local' (server uploads/) or 'r2' (Cloudflare R2)
+  'storage_driver' => 'local',
+  'r2_account_id' => '',
+  'r2_access_key' => '',
+  'r2_secret_key' => '',
+  'r2_bucket' => '',
+  'r2_public_url' => '', // e.g. https://pub-xxxxx.r2.dev or https://files.yourdomain.com
+  'r2_prefix' => 'uploads',
+  'r2_region' => 'auto',
+  'r2_delete_local' => '1', // delete from server after upload to R2
 );

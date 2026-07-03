@@ -240,6 +240,34 @@ function upload_dir_path(): string
     return base_path('uploads');
 }
 
+function storage_config(string $key, $default = '')
+{
+    $fromConfig = config($key, null);
+    if ($fromConfig !== null && $fromConfig !== '') {
+        return $fromConfig;
+    }
+    try {
+        $fromDb = \App\Models\SiteData::setting($key, null);
+        if ($fromDb !== null && $fromDb !== '') {
+            return $fromDb;
+        }
+    } catch (\Throwable $e) {
+        // DB may be unavailable during install
+    }
+    return $default;
+}
+
+function storage_driver(): string
+{
+    $driver = strtolower(trim((string) storage_config('storage_driver', 'local')));
+    return in_array($driver, ['local', 'r2'], true) ? $driver : 'local';
+}
+
+function storage_uses_r2(): bool
+{
+    return \App\Core\CloudflareR2::enabled();
+}
+
 function upload_legacy_dirs(): array
 {
     $dirs = [];
@@ -292,13 +320,26 @@ function upload_url(?string $filename): string
     if (!$filename) {
         return '';
     }
+    $filename = basename(str_replace('\\', '/', $filename));
+    if (storage_uses_r2()) {
+        return \App\Core\CloudflareR2::publicUrl($filename);
+    }
     upload_sync_file($filename);
-    return site_url('uploads/' . basename(str_replace('\\', '/', $filename)));
+    return site_url('uploads/' . $filename);
 }
 
 function upload_exists(?string $filename): bool
 {
-    return upload_resolve_path($filename) !== null;
+    if (!$filename) {
+        return false;
+    }
+    if (upload_resolve_path($filename) !== null) {
+        return true;
+    }
+    if (storage_uses_r2()) {
+        return \App\Core\CloudflareR2::exists($filename);
+    }
+    return false;
 }
 
 function normalize_uidai(?string $value): string

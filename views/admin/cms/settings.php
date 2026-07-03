@@ -51,6 +51,39 @@
   </div>
   <div style="margin-top:1rem"><label>Principal Message</label><textarea name="settings[principal_message]"><?= e($settings['principal_message'] ?? '') ?></textarea></div>
 
+  <h3 style="margin-top:1.5rem">Cloud Document Storage (Cloudflare R2)</h3>
+  <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">
+    Documents (photo, signature, certificates, PDFs) ko main server ki jagah Cloudflare R2 par save karein.
+    Credentials Cloudflare Dashboard → R2 → Manage R2 API Tokens se milte hain.
+  </p>
+  <?php $r2On = storage_uses_r2(); ?>
+  <div class="admin-alert <?= $r2On ? 'admin-alert-success' : '' ?>" style="margin-bottom:1rem">
+    Storage status:
+    <strong><?= $r2On ? 'Cloudflare R2 (active)' : 'Local server (uploads/)' ?></strong>
+  </div>
+  <div class="form-grid">
+    <div>
+      <label>Storage Driver</label>
+      <select name="settings[storage_driver]">
+        <option value="local" <?= ($settings['storage_driver'] ?? 'local') === 'local' ? 'selected' : '' ?>>Local server</option>
+        <option value="r2" <?= ($settings['storage_driver'] ?? '') === 'r2' ? 'selected' : '' ?>>Cloudflare R2</option>
+      </select>
+    </div>
+    <div><label>R2 Account ID</label><input name="settings[r2_account_id]" value="<?= e($settings['r2_account_id'] ?? '') ?>" placeholder="Cloudflare Account ID"></div>
+    <div><label>R2 Access Key ID</label><input name="settings[r2_access_key]" value="<?= e($settings['r2_access_key'] ?? '') ?>" autocomplete="off"></div>
+    <div><label>R2 Secret Access Key</label><input name="settings[r2_secret_key]" type="password" value="<?= e($settings['r2_secret_key'] ?? '') ?>" autocomplete="new-password"></div>
+    <div><label>R2 Bucket Name</label><input name="settings[r2_bucket]" value="<?= e($settings['r2_bucket'] ?? '') ?>" placeholder="maner-iti-docs"></div>
+    <div><label>R2 Public URL</label><input name="settings[r2_public_url]" value="<?= e($settings['r2_public_url'] ?? '') ?>" placeholder="https://pub-xxxxx.r2.dev"></div>
+    <div><label>R2 Folder Prefix</label><input name="settings[r2_prefix]" value="<?= e($settings['r2_prefix'] ?? 'uploads') ?>" placeholder="uploads"></div>
+    <div>
+      <label>Delete from server after R2 upload</label>
+      <select name="settings[r2_delete_local]">
+        <option value="1" <?= ($settings['r2_delete_local'] ?? '1') === '1' ? 'selected' : '' ?>>Yes (recommended)</option>
+        <option value="0" <?= ($settings['r2_delete_local'] ?? '') === '0' ? 'selected' : '' ?>>No (keep local copy)</option>
+      </select>
+    </div>
+  </div>
+
   <h3 style="margin-top:1.5rem">Website Branding</h3>
   <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">
     Favicon browser tab icon hai. App logo mobile web app / home screen icon ke liye use hota hai (PNG recommended, square).

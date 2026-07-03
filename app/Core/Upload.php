@@ -53,7 +53,25 @@ class Upload
                 if ($optimized !== $filename) {
                     @unlink($fullPath);
                 }
-                return $optimized;
+                $filename = $optimized;
+                $fullPath = $dir . '/' . $filename;
+            }
+        }
+
+        // Push to Cloudflare R2 when configured — documents leave main server
+        if (\App\Core\CloudflareR2::enabled()) {
+            $mime = branding_mime_type($filename);
+            if (str_ends_with(strtolower($filename), '.pdf')) {
+                $mime = 'application/pdf';
+            }
+            $ok = \App\Core\CloudflareR2::putFile($fullPath, $filename, $mime);
+            if (!$ok) {
+                @unlink($fullPath);
+                throw new \RuntimeException('Failed to upload file to Cloudflare R2. Check R2 settings.');
+            }
+            $deleteLocal = storage_config('r2_delete_local', '1');
+            if ($deleteLocal === '1' || $deleteLocal === 1 || $deleteLocal === true || $deleteLocal === 'true') {
+                @unlink($fullPath);
             }
         }
 
