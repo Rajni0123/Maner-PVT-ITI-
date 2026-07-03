@@ -268,24 +268,35 @@ $navActive = 'admission';
             </h2>
             <p class="text-on-surface-variant -mt-4">Choose your desired technical field. Note: Admission depends on merit and availability.</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <?php foreach ($trades as $t):
+            <?php
+            $tradeList = $trades ?? [];
+            if (!$tradeList) {
+                $tradeList = [
+                    ['name' => 'Electrician', 'slug' => 'electrician', 'duration' => '2 Years', 'description' => ''],
+                    ['name' => 'Fitter', 'slug' => 'fitter', 'duration' => '2 Years', 'description' => ''],
+                ];
+            }
+            ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="tradeCardGrid">
+              <?php foreach ($tradeList as $t):
                 $slug = $t['slug'] ?? '';
                 $icon = $tradeIcons[$slug] ?? 'precision_manufacturing';
                 $duration = $t['duration'] ?? '2 Years';
                 $selected = old('trade') === $t['name'];
               ?>
               <label class="trade-card relative flex flex-col p-6 border-2 <?= $selected ? 'border-primary bg-surface-container-low' : 'border-outline-variant' ?> hover:border-primary cursor-pointer group transition-all">
-                <input class="absolute top-4 right-4 text-primary focus:ring-0" name="trade" type="radio" value="<?= e($t['name']) ?>" <?= $selected ? 'checked' : '' ?>/>
-                <span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary"><?= e($icon) ?></span>
+                <input class="sr-only" name="trade" type="radio" value="<?= e($t['name']) ?>" <?= $selected ? 'checked' : '' ?>/>
+                <span class="material-symbols-outlined text-3xl mb-2 text-on-surface-variant group-hover:text-primary trade-check <?= $selected ? 'text-primary' : '' ?>"><?= e($icon) ?></span>
                 <span class="font-headline-md font-bold block mb-1"><?= e($t['name']) ?></span>
                 <span class="text-xs font-label-sm uppercase text-outline"><?= e($duration) ?> Duration</span>
                 <?php if (!empty($t['description'])): ?>
                 <p class="text-sm mt-3 text-on-surface-variant"><?= e(mb_strimwidth($t['description'], 0, 120, '...')) ?></p>
                 <?php endif; ?>
+                <span class="trade-selected-badge mt-4 text-xs font-bold text-primary <?= $selected ? '' : 'hidden' ?>">✓ Selected</span>
               </label>
               <?php endforeach; ?>
             </div>
+            <p id="tradeSelectedText" class="text-sm font-bold text-primary"><?= old('trade') ? 'Selected trade: ' . e(old('trade')) : 'Please select a trade above.' ?></p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
               <div class="space-y-2">

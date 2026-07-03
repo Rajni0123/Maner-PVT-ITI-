@@ -37,38 +37,45 @@
   </div>
 
   <?php
-  $tradeOptions = $trades ?? [];
-  if (!$tradeOptions) {
-      $tradeOptions = [
-          ['name' => 'Electrician'],
-          ['name' => 'Fitter'],
-      ];
+  $tradeOptions = [];
+  foreach (($trades ?? []) as $t) {
+      $name = trim((string) ($t['name'] ?? ''));
+      if ($name !== '') {
+          $tradeOptions[$name] = $name;
+      }
   }
-  $sessionOptions = $sessions ?? [];
+  if (!$tradeOptions) {
+      $tradeOptions = ['Electrician' => 'Electrician', 'Fitter' => 'Fitter'];
+  }
+  $sessionOptions = [];
+  foreach (($sessions ?? []) as $s) {
+      $name = trim((string) ($s['session_name'] ?? ''));
+      if ($name !== '') {
+          $sessionOptions[$name] = $name;
+      }
+  }
   if (!$sessionOptions) {
-      $sessionOptions = [
-          ['session_name' => '2026-28'],
-          ['session_name' => '2025-27'],
-      ];
+      $sessionOptions = ['2026-28' => '2026-28', '2025-27' => '2025-27'];
   }
   ?>
   <h3 style="margin-top:1.5rem">Course Details</h3>
   <div class="form-grid">
     <div>
       <label>Trade *</label>
-      <select name="trade" id="trade" required>
-        <option value="">Select trade</option>
-        <?php foreach ($tradeOptions as $t): ?>
-        <option value="<?= e($t['name']) ?>"><?= e($t['name']) ?></option>
+      <input type="hidden" name="trade" id="trade" value="">
+      <div class="choice-picker" id="tradePicker">
+        <?php foreach ($tradeOptions as $name): ?>
+        <button type="button" data-value="<?= e($name) ?>"><?= e($name) ?></button>
         <?php endforeach; ?>
-      </select>
+      </div>
+      <p id="tradeSelectedLabel" style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--admin-on-surface-variant)">Selected: —</p>
     </div>
     <div>
       <label>Session *</label>
       <select name="session" id="session" required>
         <option value="">Select session</option>
-        <?php foreach ($sessionOptions as $s): ?>
-        <option value="<?= e($s['session_name']) ?>"><?= e($s['session_name']) ?></option>
+        <?php foreach ($sessionOptions as $name): ?>
+        <option value="<?= e($name) ?>"><?= e($name) ?></option>
         <?php endforeach; ?>
       </select>
     </div>
@@ -79,30 +86,32 @@
     <div>
       <label>Status</label>
       <select name="status">
-        <option value="Pending">Pending</option>
+        <option value="Pending" selected>Pending</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
       </select>
     </div>
     <div>
       <label>BSCC (Student Credit Card)</label>
-      <select name="student_credit_card" id="student_credit_card">
-        <option value="No">No</option>
-        <option value="Yes">Yes</option>
-      </select>
+      <input type="hidden" name="student_credit_card" id="student_credit_card" value="No">
+      <div class="choice-picker" id="bsccPicker">
+        <button type="button" data-value="No" class="is-active">No</button>
+        <button type="button" data-value="Yes">Yes</button>
+      </div>
+      <p id="bsccSelectedLabel" style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--admin-on-surface-variant)">Selected: No</p>
     </div>
     <div>
       <label>PWD Claim</label>
       <select name="pwd_claim">
-        <option value="No">No</option>
+        <option value="No" selected>No</option>
         <option value="Yes">Yes</option>
       </select>
     </div>
   </div>
 
-  <div id="bscc_details_box" class="card" style="display:none;margin-top:1rem;background:var(--admin-surface-container-low);border:1px solid var(--admin-outline-variant)">
+  <div id="bscc_details_box" class="bscc-details-box">
     <h4 style="margin:0 0 0.75rem">BSCC Bank Account Details</h4>
-    <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">Student Credit Card select karne par bank details bharna zaroori hai.</p>
+    <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">BSCC = Yes select karne par yeh fields open hote hain.</p>
     <div class="form-grid">
       <div>
         <label>Bank Name *</label>
@@ -124,7 +133,7 @@
         <label>Branch Name</label>
         <input name="student_credit_card_branch" id="student_credit_card_branch" placeholder="Branch">
       </div>
-      <div id="bscc_doc_field">
+      <div>
         <label>BSCC Document</label>
         <input type="file" name="student_credit_card_doc" accept="image/*,.pdf">
       </div>
@@ -166,32 +175,57 @@
 <script src="<?= asset('js/form-utils.js') ?>"></script>
 <script>
 (function () {
-  var bsccSelect = document.getElementById('student_credit_card');
+  function bindPicker(pickerId, inputId, labelId, onChange) {
+    var picker = document.getElementById(pickerId);
+    var input = document.getElementById(inputId);
+    var label = document.getElementById(labelId);
+    if (!picker || !input) return;
+
+    picker.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-value]');
+      if (!btn || !picker.contains(btn)) return;
+      e.preventDefault();
+      var value = btn.getAttribute('data-value') || '';
+      input.value = value;
+      picker.querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('is-active', b === btn);
+      });
+      if (label) label.textContent = 'Selected: ' + (value || '—');
+      if (typeof onChange === 'function') onChange(value);
+    });
+  }
+
   var bsccBox = document.getElementById('bscc_details_box');
   var bankInput = document.getElementById('student_credit_card_bank');
   var accountInput = document.getElementById('student_credit_card_account');
 
-  function toggleBscc() {
-    if (!bsccSelect || !bsccBox) return;
-    var show = bsccSelect.value === 'Yes';
-    bsccBox.style.display = show ? 'block' : 'none';
+  function toggleBscc(value) {
+    var show = value === 'Yes';
+    if (bsccBox) bsccBox.classList.toggle('is-open', show);
     if (bankInput) bankInput.required = show;
     if (accountInput) accountInput.required = show;
     if (!show) {
-      if (bankInput) bankInput.value = '';
-      if (accountInput) accountInput.value = '';
-      var holder = document.getElementById('student_credit_card_holder');
-      var ifsc = document.getElementById('student_credit_card_ifsc');
-      var branch = document.getElementById('student_credit_card_branch');
-      if (holder) holder.value = '';
-      if (ifsc) ifsc.value = '';
-      if (branch) branch.value = '';
+      ['student_credit_card_bank', 'student_credit_card_holder', 'student_credit_card_account', 'student_credit_card_ifsc', 'student_credit_card_branch'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+      });
     }
   }
 
-  if (bsccSelect) {
-    bsccSelect.addEventListener('change', toggleBscc);
-    toggleBscc();
+  bindPicker('tradePicker', 'trade', 'tradeSelectedLabel');
+  bindPicker('bsccPicker', 'student_credit_card', 'bsccSelectedLabel', toggleBscc);
+  toggleBscc(document.getElementById('student_credit_card').value || 'No');
+
+  var form = document.getElementById('adminAdmissionForm');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      var trade = document.getElementById('trade');
+      if (!trade || !trade.value) {
+        e.preventDefault();
+        alert('Please select a Trade (Electrician or Fitter).');
+        return false;
+      }
+    });
   }
 })();
 </script>

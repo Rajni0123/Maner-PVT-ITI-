@@ -166,19 +166,40 @@ function calcPct(obtainedId, totalId, pctId) {
 calcPct('class_10th_marks_obtained', 'class_10th_total_marks', 'class_10th_percentage');
 
 // Trade card highlight
-document.querySelectorAll('input[name="trade"]').forEach((radio) => {
-  radio.addEventListener('change', () => {
-    document.querySelectorAll('.trade-card').forEach((card) => {
-      card.classList.remove('border-primary', 'bg-surface-container-low');
-      card.classList.add('border-outline-variant');
-    });
-    const label = radio.closest('.trade-card');
-    if (label) {
-      label.classList.add('border-primary', 'bg-surface-container-low');
-      label.classList.remove('border-outline-variant');
+function refreshTradeCards() {
+  const selectedText = document.getElementById('tradeSelectedText');
+  document.querySelectorAll('.trade-card').forEach((card) => {
+    const radio = card.querySelector('input[name="trade"]');
+    const badge = card.querySelector('.trade-selected-badge');
+    const active = !!(radio && radio.checked);
+    card.classList.toggle('border-primary', active);
+    card.classList.toggle('bg-surface-container-low', active);
+    card.classList.toggle('border-outline-variant', !active);
+    if (badge) badge.classList.toggle('hidden', !active);
+    if (active && selectedText) {
+      selectedText.textContent = 'Selected trade: ' + radio.value;
     }
   });
+  const any = document.querySelector('input[name="trade"]:checked');
+  if (!any && selectedText) {
+    selectedText.textContent = 'Please select a trade above.';
+  }
+}
+
+document.querySelectorAll('.trade-card').forEach((card) => {
+  card.addEventListener('click', (e) => {
+    const radio = card.querySelector('input[name="trade"]');
+    if (!radio) return;
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+    refreshTradeCards();
+  });
 });
+
+document.querySelectorAll('input[name="trade"]').forEach((radio) => {
+  radio.addEventListener('change', refreshTradeCards);
+});
+refreshTradeCards();
 
 // BSCC bank details toggle
 (function () {

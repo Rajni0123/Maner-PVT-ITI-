@@ -69,7 +69,13 @@ function site_url(string $path = ''): string
 
 function asset(string $path): string
 {
-    return site_url('assets/' . ltrim($path, '/'));
+    $relative = 'assets/' . ltrim($path, '/');
+    $url = site_url($relative);
+    $file = base_path($relative);
+    if (is_file($file)) {
+        $url .= (str_contains($url, '?') ? '&' : '?') . 'v=' . filemtime($file);
+    }
+    return $url;
 }
 
 function menu_url(string $url): string
