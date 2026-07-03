@@ -155,6 +155,8 @@ class Upload
         $image = self::applyExifOrientation($image, $sourcePath, $ext);
         if ($prefix === 'photo') {
             $image = self::cropPassportPhoto($image);
+        } elseif ($prefix === 'signature') {
+            $image = self::normalizeSignature($image);
         } else {
             $image = self::resizeIfNeeded($image);
         }
@@ -238,6 +240,53 @@ class Upload
         imagedestroy($image);
 
         return $resized;
+    }
+
+    /**
+     * Normalize signature images: fix portrait phone photos, scale up for print.
+     * @param \GdImage|resource $image
+     * @return \GdImage|resource
+     */
+    private static function normalizeSignature($image)
+    {
+        $width = imagesx($image);
+        $height = imagesy($image);
+        if ($width < 1 || $height < 1) {
+            return $image;
+        }
+
+        // Phone photos of signatures are often portrait — rotate to landscape
+        if ($height > ($width * 1.15)) {
+            $rotated = imagerotate($image, -90, imagecolorallocate($image, 255, 255, 255));
+            if ($rotated !== false) {
+                imagedestroy($image);
+                $image = $rotated;
+                $width = imagesx($image);
+                $height = imagesy($image);
+            }
+        }
+
+        // Target canvas for clear print signature (fills box, scales small images up)
+        $outW = 600;
+        $outH = 200;
+        $ratio = min($outW / max(1, $width), $outH / max(1, $height));
+        $newW = max(1, (int) round($width * $ratio));
+        $newH = max(1, (int) round($height * $ratio));
+
+        $final = imagecreatetruecolor($outW, $outH);
+        if ($final === false) {
+            return self::resizeIfNeeded($image);
+        }
+
+        $white = imagecolorallocate($final, 255, 255, 255);
+        imagefilledrectangle($final, 0, 0, $outW, $outH, $white);
+
+        $dstX = (int) round(($outW - $newW) / 2);
+        $dstY = (int) round(($outH - $newH) / 2);
+        imagecopyresampled($final, $image, $dstX, $dstY, 0, 0, $newW, $newH, $width, $height);
+        imagedestroy($image);
+
+        return $final;
     }
 
     /** @param \GdImage|resource $image */
