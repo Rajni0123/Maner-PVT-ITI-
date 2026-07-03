@@ -166,6 +166,16 @@ $misCode = \App\Models\SiteData::setting('mis_code', 'PR10001156');
     </div>
   </div>
 
+  <div class="declaration-block">
+    <div class="declaration-title">Declaration by Applicant</div>
+    <p class="declaration-text">
+      I hereby declare that the information provided above is true and correct to the best of my knowledge and belief.
+      I understand that any false information or concealment of facts may lead to cancellation of my admission at any stage.
+      I agree to abide by all rules, regulations, and discipline of <?= e($logoText) ?> and the guidelines of NCVT / competent authority.
+      I also undertake to pay all fees and dues as prescribed by the institute within the stipulated time.
+    </p>
+  </div>
+
   <div class="form-bottom">
     <div class="sign-block">
       <div class="sign-box">
@@ -179,9 +189,9 @@ $misCode = \App\Models\SiteData::setting('mis_code', 'PR10001156');
       <div class="sign-box"></div>
       <div class="sign-label">Principal / Authorized Signatory</div>
     </div>
-    <div class="form-footer">
-      I declare that the information provided above is true and correct to the best of my knowledge.<br>
-      <?= e($logoText) ?> &nbsp;|&nbsp; <?= e($appId) ?> &nbsp;|&nbsp; Computer Generated — Valid with Official Seal
-    </div>
+  </div>
+
+  <div class="form-footer">
+    <?= e($logoText) ?> &nbsp;|&nbsp; <?= e($appId) ?> &nbsp;|&nbsp; Computer Generated — Valid with Official Seal
   </div>
 </div>
