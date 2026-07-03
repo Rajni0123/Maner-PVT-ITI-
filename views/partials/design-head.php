@@ -33,6 +33,10 @@ $appLogoType = $appLogoFile !== '' ? branding_mime_type($appLogoFile) : ($favico
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="<?= asset('css/design.css') ?>">
+<?php if (empty($skipMobileAppCss)): ?>
+<link rel="stylesheet" href="<?= asset('css/pwa.css') ?>">
+<link rel="stylesheet" href="<?= asset('css/mobile-app.css') ?>">
+<?php endif; ?>
 <?php foreach ($extraCss as $css): ?>
 <link rel="stylesheet" href="<?= asset('css/' . $css) ?>">
 <?php endforeach; ?>

@@ -14,7 +14,6 @@ $navActive = 'news';
 <html class="scroll-smooth" lang="en">
 <head>
 <?php require base_path('views/partials/design-head.php'); ?>
-<link rel="stylesheet" href="<?= asset('css/pwa.css') ?>">
 </head>
 <body class="bg-background text-on-surface font-body-md">
 
@@ -84,7 +83,5 @@ $navActive = 'news';
 </main>
 
 <?php require base_path('views/partials/design-footer.php'); ?>
-<?php require base_path('views/partials/mobile-bottom-nav.php'); ?>
-<script src="<?= asset('js/pwa.js') ?>"></script>
 </body>
 </html>

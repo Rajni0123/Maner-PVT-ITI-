@@ -9,12 +9,13 @@
 /* Body padding for bottom nav on mobile */
 @media (max-width: 768px) {
   body.has-bottom-nav {
-    padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 8px);
+    padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px);
   }
 
-  /* Hide floating CTA on mobile (replaced by bottom nav) */
+  /* Keep FABs above bottom nav */
   .floating-cta {
-    bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 16px) !important;
+    bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 12px) !important;
+    right: 12px !important;
   }
 }
 

@@ -3,6 +3,7 @@
 <head>
 <?php
 $pageTitle = 'Admin Login | Maner Private ITI';
+$skipMobileAppCss = true;
 require base_path('views/partials/design-head.php');
 ?>
 <link rel="stylesheet" href="<?= asset('css/admin.css') ?>">

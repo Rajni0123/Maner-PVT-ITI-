@@ -3,3 +3,44 @@
   border-color: #000000;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
+
+@media (max-width: 768px) {
+  .admission-form input,
+  .admission-form select,
+  .admission-form textarea,
+  form input,
+  form select,
+  form textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+
+  form .grid,
+  form .form-grid,
+  .admission-form .grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  form .flex.items-end,
+  form .flex.items-center.justify-between {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  form button[type="submit"],
+  form .btn-primary,
+  form button.bg-primary,
+  form button.bg-secondary-container {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  /* Step / progress bars */
+  .step-indicator,
+  .admission-steps {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+}
