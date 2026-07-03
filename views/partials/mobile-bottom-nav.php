@@ -7,14 +7,6 @@ $navActive = static function (string $path) use ($currentPath): bool {
 ?>
 <!-- Mobile Bottom Navigation -->
 <nav class="bottom-nav" id="bottomNav">
-  <!-- Top quick link strip -->
-  <div class="bottom-nav-strip">
-    <a href="https://dethunar-bih.com/" target="_blank" rel="noopener" class="bottom-nav-strip-link">
-      <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1">school</span>
-      National Scholarship Portal (DET Bihar)
-      <span class="material-symbols-outlined" style="font-size:12px">open_in_new</span>
-    </a>
-  </div>
   <div class="bottom-nav-items">
     <a href="<?= site_url() ?>" class="bottom-nav-item <?= $navActive('/') ? 'is-active' : '' ?>">
       <span class="material-symbols-outlined">home</span>
