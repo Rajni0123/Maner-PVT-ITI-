@@ -58,21 +58,38 @@
       $sessionOptions = ['2026-28' => '2026-28', '2025-27' => '2025-27'];
   }
   ?>
+  <style>
+    .adm-choice-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; }
+    .adm-choice-btn {
+      display:inline-block; min-width:120px; padding:10px 16px; border:2px solid #c6c6cd;
+      background:#fff; color:#191c1e; font-weight:700; font-size:14px; cursor:pointer;
+      border-radius:6px; text-align:center;
+    }
+    .adm-choice-btn:hover { border-color:#131b2e; }
+    .adm-choice-btn.is-active { background:#131b2e; border-color:#131b2e; color:#fff; }
+    .adm-selected-label { margin:8px 0 0; font-size:13px; color:#45464d; font-weight:600; }
+    #bscc_details_box {
+      display:none; margin-top:16px; padding:16px; background:#f2f4f6;
+      border:1px solid #c6c6cd; border-radius:8px;
+    }
+    #bscc_details_box.is-open { display:block !important; }
+  </style>
+
   <h3 style="margin-top:1.5rem">Course Details</h3>
   <div class="form-grid">
     <div>
       <label>Trade *</label>
       <input type="hidden" name="trade" id="trade" value="">
-      <div class="choice-picker" id="tradePicker">
+      <div class="adm-choice-row" id="tradePicker">
         <?php foreach ($tradeOptions as $name): ?>
-        <button type="button" data-value="<?= e($name) ?>"><?= e($name) ?></button>
+        <button type="button" class="adm-choice-btn" data-value="<?= e($name) ?>"><?= e($name) ?></button>
         <?php endforeach; ?>
       </div>
-      <p id="tradeSelectedLabel" style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--admin-on-surface-variant)">Selected: —</p>
+      <p class="adm-selected-label" id="tradeSelectedLabel">Selected: —</p>
     </div>
     <div>
       <label>Session *</label>
-      <select name="session" id="session" required>
+      <select name="session" id="session" required style="width:100%;padding:10px;border:1px solid #c6c6cd;border-radius:6px;background:#fff;color:#191c1e">
         <option value="">Select session</option>
         <?php foreach ($sessionOptions as $name): ?>
         <option value="<?= e($name) ?>"><?= e($name) ?></option>
@@ -85,7 +102,7 @@
     </div>
     <div>
       <label>Status</label>
-      <select name="status">
+      <select name="status" style="width:100%;padding:10px;border:1px solid #c6c6cd;border-radius:6px;background:#fff;color:#191c1e">
         <option value="Pending" selected>Pending</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
@@ -94,24 +111,24 @@
     <div>
       <label>BSCC (Student Credit Card)</label>
       <input type="hidden" name="student_credit_card" id="student_credit_card" value="No">
-      <div class="choice-picker" id="bsccPicker">
-        <button type="button" data-value="No" class="is-active">No</button>
-        <button type="button" data-value="Yes">Yes</button>
+      <div class="adm-choice-row" id="bsccPicker">
+        <button type="button" class="adm-choice-btn is-active" data-value="No">No</button>
+        <button type="button" class="adm-choice-btn" data-value="Yes">Yes</button>
       </div>
-      <p id="bsccSelectedLabel" style="margin:0.4rem 0 0;font-size:0.85rem;color:var(--admin-on-surface-variant)">Selected: No</p>
+      <p class="adm-selected-label" id="bsccSelectedLabel">Selected: No</p>
     </div>
     <div>
       <label>PWD Claim</label>
-      <select name="pwd_claim">
+      <select name="pwd_claim" style="width:100%;padding:10px;border:1px solid #c6c6cd;border-radius:6px;background:#fff;color:#191c1e">
         <option value="No" selected>No</option>
         <option value="Yes">Yes</option>
       </select>
     </div>
   </div>
 
-  <div id="bscc_details_box" class="bscc-details-box">
+  <div id="bscc_details_box">
     <h4 style="margin:0 0 0.75rem">BSCC Bank Account Details</h4>
-    <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">BSCC = Yes select karne par yeh fields open hote hain.</p>
+    <p style="margin:0 0 1rem;font-size:0.85rem;color:#45464d">BSCC = Yes select karne par yeh fields open hote hain.</p>
     <div class="form-grid">
       <div>
         <label>Bank Name *</label>
@@ -180,17 +197,25 @@
     var label = document.getElementById(labelId);
     if (!picker || !input) return;
 
-    picker.addEventListener('click', function (e) {
-      var btn = e.target.closest('button[data-value]');
-      if (!btn || !picker.contains(btn)) return;
-      e.preventDefault();
-      var value = btn.getAttribute('data-value') || '';
-      input.value = value;
-      picker.querySelectorAll('button').forEach(function (b) {
-        b.classList.toggle('is-active', b === btn);
+    picker.querySelectorAll('button[data-value]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var value = btn.getAttribute('data-value') || '';
+        input.value = value;
+        picker.querySelectorAll('button[data-value]').forEach(function (b) {
+          b.classList.remove('is-active');
+          b.style.background = '#fff';
+          b.style.color = '#191c1e';
+          b.style.borderColor = '#c6c6cd';
+        });
+        btn.classList.add('is-active');
+        btn.style.background = '#131b2e';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#131b2e';
+        if (label) label.textContent = 'Selected: ' + (value || '—');
+        if (typeof onChange === 'function') onChange(value);
       });
-      if (label) label.textContent = 'Selected: ' + (value || '—');
-      if (typeof onChange === 'function') onChange(value);
     });
   }
 
@@ -200,7 +225,10 @@
 
   function toggleBscc(value) {
     var show = value === 'Yes';
-    if (bsccBox) bsccBox.classList.toggle('is-open', show);
+    if (bsccBox) {
+      bsccBox.style.display = show ? 'block' : 'none';
+      bsccBox.classList.toggle('is-open', show);
+    }
     if (bankInput) bankInput.required = show;
     if (accountInput) accountInput.required = show;
     if (!show) {
@@ -211,9 +239,19 @@
     }
   }
 
+  // Default: hide bank box
+  if (bsccBox) bsccBox.style.display = 'none';
+
+  // Default active style for BSCC No
+  var defaultBscc = document.querySelector('#bsccPicker button[data-value="No"]');
+  if (defaultBscc) {
+    defaultBscc.style.background = '#131b2e';
+    defaultBscc.style.color = '#fff';
+    defaultBscc.style.borderColor = '#131b2e';
+  }
+
   bindPicker('tradePicker', 'trade', 'tradeSelectedLabel');
   bindPicker('bsccPicker', 'student_credit_card', 'bsccSelectedLabel', toggleBscc);
-  toggleBscc(document.getElementById('student_credit_card').value || 'No');
 
   var form = document.getElementById('adminAdmissionForm');
   if (form) {
