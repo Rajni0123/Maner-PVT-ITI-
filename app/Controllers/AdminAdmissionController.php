@@ -243,7 +243,6 @@ class AdminAdmissionController
                     'account_holder' => $data['student_credit_card_holder'],
                     'account_number' => $data['student_credit_card_account'],
                     'ifsc' => strtoupper($data['student_credit_card_ifsc']),
-                    'branch' => $data['student_credit_card_branch'],
                 ]);
             }
 

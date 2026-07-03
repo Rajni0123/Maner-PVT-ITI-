@@ -138,14 +138,6 @@
         <label>IFSC Code</label>
         <input name="student_credit_card_ifsc" id="student_credit_card_ifsc" placeholder="e.g. SBIN0001234">
       </div>
-      <div>
-        <label>Branch Name</label>
-        <input name="student_credit_card_branch" id="student_credit_card_branch" placeholder="Branch">
-      </div>
-      <div>
-        <label>BSCC Document</label>
-        <input type="file" name="student_credit_card_doc" accept="image/*,.pdf">
-      </div>
     </div>
   </div>
 
@@ -195,7 +187,7 @@
     if (bankInput) bankInput.required = show;
     if (accountInput) accountInput.required = show;
     if (!show) {
-      ['student_credit_card_bank', 'student_credit_card_holder', 'student_credit_card_account', 'student_credit_card_ifsc', 'student_credit_card_branch'].forEach(function (id) {
+      ['student_credit_card_bank', 'student_credit_card_holder', 'student_credit_card_account', 'student_credit_card_ifsc'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.value = '';
       });

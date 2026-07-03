@@ -337,10 +337,6 @@ $navActive = 'admission';
                   <label class="font-bold text-sm block">IFSC Code</label>
                   <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_ifsc" value="<?= e(old('student_credit_card_ifsc')) ?>" type="text"/>
                 </div>
-                <div class="space-y-2">
-                  <label class="font-bold text-sm block">Branch Name</label>
-                  <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="student_credit_card_branch" value="<?= e(old('student_credit_card_branch')) ?>" type="text"/>
-                </div>
               </div>
             </div>
 
@@ -361,10 +357,6 @@ $navActive = 'admission';
                 <label class="font-bold text-sm block">Applicant Signature *</label>
                 <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="signature" accept="image/*" required/>
                 <p class="text-xs text-on-surface-variant">Sign on white paper, scan or photo — JPG/PNG only</p>
-              </div>
-              <div class="space-y-2">
-                <label class="font-bold text-sm block">SCC Document</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all text-sm" type="file" name="student_credit_card_doc" accept="image/*,application/pdf"/>
               </div>
             </div>
 
