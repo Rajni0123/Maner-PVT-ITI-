@@ -158,7 +158,6 @@
     <div><label>Marks Obtained</label><input name="class_10th_marks_obtained" id="class_10th_marks_obtained" type="number" min="0"></div>
     <div><label>Total Marks</label><input name="class_10th_total_marks" id="class_10th_total_marks" type="number" min="0"></div>
     <div><label>Percentage</label><input name="class_10th_percentage" id="class_10th_percentage" readonly placeholder="Auto calculated"></div>
-    <div><label>Subject</label><input name="class_10th_subject"></div>
   </div>
 
   <h3 style="margin-top:1.5rem">Documents (optional)</h3>

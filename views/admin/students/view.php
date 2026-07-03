@@ -112,7 +112,6 @@ $bsccApplied = $admission['student_credit_card'] ?? 'No';
   <h4 style="margin-top:1.5rem;margin-bottom:0.75rem">10th Education</h4>
   <div class="form-grid">
     <div><label>10th Board / School</label><input name="class_10th_school" value="<?= e($s['class_10th_school']) ?>"></div>
-    <div><label>10th Subject</label><input name="class_10th_subject" value="<?= e($s['class_10th_subject']) ?>"></div>
     <div><label>Marks Obtained</label><input name="class_10th_marks_obtained" id="class_10th_marks_obtained" value="<?= e($s['class_10th_marks_obtained']) ?>"></div>
     <div><label>Total Marks</label><input name="class_10th_total_marks" id="class_10th_total_marks" value="<?= e($s['class_10th_total_marks']) ?>"></div>
     <div><label>Percentage</label><input name="class_10th_percentage" id="class_10th_percentage" readonly value="<?= e($s['class_10th_percentage']) ?>"></div>

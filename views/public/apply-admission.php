@@ -253,10 +253,6 @@ $navActive = 'admission';
                 <label class="font-bold text-sm block">Percentage</label>
                 <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all bg-surface-container-low" name="class_10th_percentage" id="class_10th_percentage" value="<?= e(old('class_10th_percentage')) ?>" readonly type="text"/>
               </div>
-              <div class="space-y-2">
-                <label class="font-bold text-sm block">Subject</label>
-                <input class="w-full border border-outline-variant p-3 form-input-focus rounded-none transition-all" name="class_10th_subject" value="<?= e(old('class_10th_subject')) ?>" type="text"/>
-              </div>
             </div>
           </div>
 
