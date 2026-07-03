@@ -9,24 +9,48 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// Scroll Reveal Animation (Intersection Observer)
+// Scroll Reveal Animation
 (function () {
   const animatedElements = document.querySelectorAll('[data-animate]');
   if (!animatedElements.length) return;
+
+  const reveal = (el) => el.classList.add('animate-visible');
+
+  // Immediately show anything already in (or near) the viewport
+  animatedElements.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 80) {
+      reveal(el);
+    }
+  });
+
+  if (!('IntersectionObserver' in window)) {
+    animatedElements.forEach(reveal);
+    return;
+  }
 
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-visible');
+          reveal(entry.target);
           observer.unobserve(entry.target);
         }
       });
     },
-    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    { threshold: 0.05, rootMargin: '0px 0px 40px 0px' }
   );
 
-  animatedElements.forEach((el) => observer.observe(el));
+  animatedElements.forEach((el) => {
+    if (!el.classList.contains('animate-visible')) {
+      observer.observe(el);
+    }
+  });
+
+  // Safety: never leave sections invisible
+  setTimeout(() => {
+    animatedElements.forEach(reveal);
+  }, 1200);
 })();
 
 // Counter Animation for Stats
@@ -34,29 +58,22 @@ window.addEventListener('scroll', () => {
   const counters = document.querySelectorAll('[data-count]');
   if (!counters.length) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          animateCounter(entry.target);
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.5 }
-  );
-
-  counters.forEach((el) => observer.observe(el));
-
   function animateCounter(el) {
+    if (el.dataset.counted === '1') return;
+    el.dataset.counted = '1';
+
     const target = el.getAttribute('data-count');
     const suffix = el.getAttribute('data-suffix') || '';
     const prefix = el.getAttribute('data-prefix') || '';
     const num = parseInt(target, 10);
-    if (isNaN(num)) { el.textContent = prefix + target + suffix; return; }
+    if (isNaN(num)) {
+      el.textContent = prefix + target + suffix;
+      return;
+    }
 
-    const duration = 1500;
+    const duration = 1200;
     const start = performance.now();
+    el.textContent = prefix + '0' + suffix;
 
     function update(now) {
       const elapsed = now - start;
@@ -68,13 +85,41 @@ window.addEventListener('scroll', () => {
     }
     requestAnimationFrame(update);
   }
+
+  counters.forEach((el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      animateCounter(el);
+    }
+  });
+
+  if (!('IntersectionObserver' in window)) {
+    counters.forEach(animateCounter);
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          animateCounter(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.2, rootMargin: '0px 0px 40px 0px' }
+  );
+
+  counters.forEach((el) => {
+    if (el.dataset.counted !== '1') observer.observe(el);
+  });
 })();
 
-// Floating CTA buttons pulse
+// Floating CTA buttons
 (function () {
   const fab = document.getElementById('floatingCTA');
   if (!fab) return;
   setTimeout(() => {
     fab.classList.add('fab-visible');
-  }, 1000);
+  }, 800);
 })();

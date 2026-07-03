@@ -214,29 +214,29 @@ $tradeCount = max(count($trades), 2);
   </section>
 
   <!-- Stats Bento Bar -->
-  <section class="relative z-30 -mt-12 px-gutter max-w-container-max mx-auto" data-animate="fade-up">
+  <section class="relative z-30 -mt-12 px-gutter max-w-container-max mx-auto mb-4">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-1 bg-surface-container shadow-xl border border-outline-variant">
-      <div class="bg-surface p-8 text-center border-r border-outline-variant">
-        <div class="font-display text-headline-lg text-primary" data-count="100" data-suffix="%">0%</div>
+      <div class="bg-surface p-6 md:p-8 text-center border-r border-outline-variant">
+        <div class="font-display text-headline-lg text-primary" data-count="100" data-suffix="%">100%</div>
         <div class="font-label-sm text-outline uppercase">Placement Support</div>
       </div>
-      <div class="bg-surface p-8 text-center border-r border-outline-variant">
-        <div class="font-display text-headline-lg text-primary" data-count="<?= (int) $tradeCount ?>" data-suffix="+">0+</div>
+      <div class="bg-surface p-6 md:p-8 text-center border-r border-outline-variant">
+        <div class="font-display text-headline-lg text-primary" data-count="<?= (int) $tradeCount ?>" data-suffix="+"><?= (int) $tradeCount ?>+</div>
         <div class="font-label-sm text-outline uppercase">Core Trades</div>
       </div>
-      <div class="bg-surface p-8 text-center border-r border-outline-variant">
+      <div class="bg-surface p-6 md:p-8 text-center border-r border-outline-variant">
         <div class="font-display text-headline-lg text-primary">NCVT</div>
         <div class="font-label-sm text-outline uppercase">Govt. Affiliated</div>
       </div>
-      <div class="bg-surface p-8 text-center">
-        <div class="font-display text-headline-lg text-primary" data-count="500" data-suffix="+">0+</div>
+      <div class="bg-surface p-6 md:p-8 text-center">
+        <div class="font-display text-headline-lg text-primary" data-count="500" data-suffix="+">500+</div>
         <div class="font-label-sm text-outline uppercase">Alumni Network</div>
       </div>
     </div>
   </section>
 
   <!-- Our Engineering Trades -->
-  <section class="py-section-gap px-gutter max-w-container-max mx-auto">
+  <section class="pt-10 pb-section-gap px-gutter max-w-container-max mx-auto">
     <div class="flex justify-between items-end mb-12" data-animate="fade-up">
       <div>
         <h2 class="font-display text-headline-lg text-primary mb-2">Our 2-Year Engineering Trades</h2>
