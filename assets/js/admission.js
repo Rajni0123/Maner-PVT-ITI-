@@ -1,0 +1,183 @@
+let currentStep = 1;
+const totalSteps = 3;
+
+const nextBtn = document.getElementById('nextBtn');
+const prevBtn = document.getElementById('prevBtn');
+const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('admissionForm');
+
+function getStepSection(step) {
+  return document.getElementById(`step${step}-content`);
+}
+
+function validateStep(step) {
+  const section = getStepSection(step);
+  if (!section) return true;
+  const fields = section.querySelectorAll('input, select, textarea');
+  for (const field of fields) {
+    if (field.type === 'radio') continue;
+    if (field.type === 'checkbox' && field.name === 'declaration') continue;
+    if (field.type === 'file' && step !== totalSteps) continue;
+    if (field.hasAttribute('required') && !field.value && field.type !== 'file') {
+      field.reportValidity();
+      return false;
+    }
+    if (field.type === 'file' && field.hasAttribute('required') && !field.files?.length) {
+      field.reportValidity();
+      return false;
+    }
+    if (!field.checkValidity()) {
+      field.reportValidity();
+      return false;
+    }
+  }
+  if (step === 3) {
+    const trade = form.querySelector('input[name="trade"]:checked');
+    if (!trade) {
+      alert('Please select a trade.');
+      return false;
+    }
+    const declaration = form.querySelector('input[name="declaration"]');
+    if (declaration && !declaration.checked) {
+      declaration.setCustomValidity('Please accept the declaration.');
+      declaration.reportValidity();
+      declaration.setCustomValidity('');
+      return false;
+    }
+  }
+  return true;
+}
+
+function updateForm() {
+  document.querySelectorAll('.step-form-section').forEach((section) => section.classList.add('hidden'));
+  getStepSection(currentStep)?.classList.remove('hidden');
+
+  for (let i = 1; i <= totalSteps; i++) {
+    const indicator = document.getElementById(`step${i}-indicator`);
+    if (!indicator) continue;
+    const circle = indicator.querySelector('div:first-child');
+    const textTitle = indicator.querySelector('p.font-bold');
+
+    if (i < currentStep) {
+      indicator.classList.remove('opacity-50');
+      circle.className = 'w-8 h-8 rounded-full bg-on-tertiary-container text-white flex items-center justify-center font-bold text-sm';
+      circle.innerHTML = '<span class="material-symbols-outlined text-sm">check</span>';
+      textTitle?.classList.remove('text-outline');
+      textTitle?.classList.add('text-primary');
+    } else if (i === currentStep) {
+      indicator.classList.remove('opacity-50');
+      circle.className = 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm';
+      circle.textContent = String(i);
+      textTitle?.classList.remove('text-outline');
+      textTitle?.classList.add('text-primary');
+    } else {
+      indicator.classList.add('opacity-50');
+      circle.className = 'w-8 h-8 rounded-full bg-surface-container-highest border border-outline text-outline flex items-center justify-center font-bold text-sm';
+      circle.textContent = String(i);
+      textTitle?.classList.remove('text-primary');
+      textTitle?.classList.add('text-outline');
+    }
+  }
+
+  if (currentStep === 1) {
+    prevBtn.classList.add('invisible');
+    nextBtn.classList.remove('hidden');
+    submitBtn.classList.add('hidden');
+  } else if (currentStep === totalSteps) {
+    prevBtn.classList.remove('invisible');
+    nextBtn.classList.add('hidden');
+    submitBtn.classList.remove('hidden');
+  } else {
+    prevBtn.classList.remove('invisible');
+    nextBtn.classList.remove('hidden');
+    submitBtn.classList.add('hidden');
+  }
+}
+
+nextBtn?.addEventListener('click', () => {
+  if (!validateStep(currentStep)) return;
+  if (currentStep < totalSteps) {
+    currentStep++;
+    updateForm();
+    form?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+prevBtn?.addEventListener('click', () => {
+  if (currentStep > 1) {
+    currentStep--;
+    updateForm();
+    form?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+form?.addEventListener('submit', (e) => {
+  for (let s = 1; s <= totalSteps; s++) {
+    if (!validateStep(s)) {
+      e.preventDefault();
+      currentStep = s;
+      updateForm();
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+  }
+});
+
+// UIDAI live check
+const uidaiInput = document.getElementById('uidai_number');
+if (uidaiInput) {
+  uidaiInput.addEventListener('input', function () {
+    const digits = uidaiInput.value.replace(/\D/g, '').slice(0, 12);
+    const parts = [];
+    if (digits.length > 0) parts.push(digits.slice(0, 4));
+    if (digits.length > 4) parts.push(digits.slice(4, 8));
+    if (digits.length > 8) parts.push(digits.slice(8, 12));
+    uidaiInput.value = parts.join(' ');
+  });
+  uidaiInput.addEventListener('blur', function () {
+    const v = uidaiInput.value.replace(/\D/g, '');
+    if (v.length !== 12) return;
+    fetch((window.APP_BASE || '') + '/api/check-uidai?uidai=' + v)
+      .then((r) => r.json())
+      .then((d) => {
+        const el = document.getElementById('uidai-msg');
+        if (!el) return;
+        el.textContent = d.message;
+        el.style.color = d.available ? '#16a34a' : '#dc2626';
+      });
+  });
+}
+
+// Auto calc 10th percentage
+function calcPct(obtainedId, totalId, pctId) {
+  const o = document.getElementById(obtainedId);
+  const t = document.getElementById(totalId);
+  const p = document.getElementById(pctId);
+  if (!o || !t || !p) return;
+  function update() {
+    const ov = parseFloat(o.value);
+    const tv = parseFloat(t.value);
+    if (ov > 0 && tv > 0) p.value = ((ov / tv) * 100).toFixed(2);
+  }
+  o.addEventListener('input', update);
+  t.addEventListener('input', update);
+  update();
+}
+calcPct('class_10th_marks_obtained', 'class_10th_total_marks', 'class_10th_percentage');
+
+// Trade card highlight
+document.querySelectorAll('input[name="trade"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('.trade-card').forEach((card) => {
+      card.classList.remove('border-primary', 'bg-surface-container-low');
+      card.classList.add('border-outline-variant');
+    });
+    const label = radio.closest('.trade-card');
+    if (label) {
+      label.classList.add('border-primary', 'bg-surface-container-low');
+      label.classList.remove('border-outline-variant');
+    }
+  });
+});
+
+updateForm();

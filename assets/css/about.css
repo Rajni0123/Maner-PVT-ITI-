@@ -1,0 +1,22 @@
+.industrial-grid {
+  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.image-overlay {
+  background: linear-gradient(to right, rgba(19, 27, 46, 0.9) 0%, rgba(19, 27, 46, 0.4) 100%);
+}
+
+.about-reveal {
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.about-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(2.5rem);
+}

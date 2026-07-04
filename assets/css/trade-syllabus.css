@@ -1,0 +1,13 @@
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+.industrial-pattern {
+  background-image: radial-gradient(#c6c6cd 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+.industrial-grid {
+  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+  background-size: 24px 24px;
+}
