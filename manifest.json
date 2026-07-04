@@ -1,0 +1,40 @@
+{
+  "name": "Maner Private ITI",
+  "short_name": "Maner ITI",
+  "description": "Official app of Maner Private ITI - Bihar's Leading Technical Institute. NCVT Affiliated.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#131b2e",
+  "theme_color": "#131b2e",
+  "categories": ["education"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Apply for Admission",
+      "short_name": "Apply",
+      "url": "/apply-admission",
+      "icons": [{"src": "/assets/icons/icon-96.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "url": "/contact",
+      "icons": [{"src": "/assets/icons/icon-96.png", "sizes": "96x96"}]
+    }
+  ]
+}

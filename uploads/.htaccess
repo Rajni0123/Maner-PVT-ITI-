@@ -1,0 +1,5 @@
+Options -Indexes
+AddType image/webp .webp
+<FilesMatch "\.(php|phtml)$">
+  Require all denied
+</FilesMatch>

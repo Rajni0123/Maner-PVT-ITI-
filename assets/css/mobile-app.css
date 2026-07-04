@@ -1,0 +1,392 @@
+/* ===== Global Mobile App Layout (all public pages) ===== */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+img,
+video,
+svg,
+canvas,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent horizontal page scroll from wide children */
+main,
+.site-footer,
+nav {
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --mobile-gutter: 16px;
+    --mobile-section: 40px;
+  }
+
+  body {
+    font-size: 15px;
+    line-height: 1.5;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Compact sticky header */
+  nav.bg-surface.sticky,
+  nav.sticky.top-0 {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  nav .h-20 {
+    height: 56px !important;
+    min-height: 56px;
+  }
+
+  nav .font-headline-md,
+  nav a.font-headline-md {
+    font-size: 1rem !important;
+    line-height: 1.25 !important;
+    max-width: min(62vw, 220px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #mobileMenuToggle {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #mobileMenuPanel {
+    max-height: min(70vh, 520px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #mobileMenuPanel a,
+  #mobileMenuPanel summary {
+    min-height: 44px;
+  }
+
+  /* Spacing tokens used across pages */
+  .px-gutter {
+    padding-left: var(--mobile-gutter) !important;
+    padding-right: var(--mobile-gutter) !important;
+  }
+
+  .py-section-gap {
+    padding-top: var(--mobile-section) !important;
+    padding-bottom: var(--mobile-section) !important;
+  }
+
+  .py-24 {
+    padding-top: 2.75rem !important;
+    padding-bottom: 2.75rem !important;
+  }
+
+  .py-20,
+  .py-16 {
+    padding-top: 2.25rem !important;
+    padding-bottom: 2.25rem !important;
+  }
+
+  .py-12 {
+    padding-top: 1.75rem !important;
+    padding-bottom: 1.75rem !important;
+  }
+
+  .gap-12 {
+    gap: 1.5rem !important;
+  }
+
+  .gap-10 {
+    gap: 1.25rem !important;
+  }
+
+  .gap-8 {
+    gap: 1rem !important;
+  }
+
+  /* Typography scale for phones */
+  .font-display,
+  .text-display {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  .font-headline-lg,
+  .text-headline-lg,
+  .text-headline-lg-mobile {
+    font-size: 1.375rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .font-headline-md,
+  .text-headline-md {
+    font-size: 1.125rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .font-body-lg,
+  .text-body-lg {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .font-body-md,
+  .text-body-md {
+    font-size: 0.9375rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Buttons & CTAs — full-width friendly stacks */
+  .flex.flex-wrap.gap-4 > a,
+  .flex.flex-wrap.gap-3 > a,
+  .flex.flex-col.sm\:flex-row > a,
+  .flex.flex-col.md\:flex-row > a {
+    justify-content: center;
+    text-align: center;
+  }
+
+  a.px-10,
+  a.px-8,
+  button.px-10,
+  button.px-8 {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+  }
+
+  a.py-4,
+  button.py-4 {
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
+  }
+
+  /* Cards & panels */
+  .p-8 {
+    padding: 1.1rem !important;
+  }
+
+  .p-10,
+  .p-12 {
+    padding: 1.25rem !important;
+  }
+
+  .mb-12 {
+    margin-bottom: 1.75rem !important;
+  }
+
+  .mb-8 {
+    margin-bottom: 1.25rem !important;
+  }
+
+  .mt-8 {
+    margin-top: 1.25rem !important;
+  }
+
+  .-mt-12 {
+    margin-top: -1.5rem !important;
+  }
+
+  /* Tables: horizontal swipe, no page overflow */
+  .table-wrap,
+  .overflow-x-auto,
+  main div:has(> table),
+  main .overflow-hidden:has(table),
+  main .bg-white:has(table),
+  main .border:has(> table),
+  main .border:has(> .w-full) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  main table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+  }
+
+  main td,
+  main th {
+    font-size: 0.8125rem !important;
+    padding: 0.65rem 0.75rem !important;
+  }
+
+  /* Forms — 16px inputs prevent iOS zoom */
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px !important;
+    max-width: 100%;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="file"],
+  select,
+  textarea {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  textarea {
+    min-height: 96px;
+  }
+
+  label {
+    font-size: 0.875rem !important;
+  }
+
+  .form-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+
+  /* Hero / banner sections */
+  section.relative.py-24,
+  section.py-24,
+  section.relative.bg-primary-container {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  /* Footer mobile alignment */
+  .site-footer .grid {
+    gap: 1.75rem !important;
+  }
+
+  .site-footer .py-section-gap {
+    padding-top: 2.25rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  .site-footer .flex.flex-col.md\:flex-row {
+    text-align: center;
+  }
+
+  .site-footer a,
+  .site-footer p {
+    word-break: break-word;
+  }
+
+  /* Floating action buttons above bottom nav */
+  .floating-cta {
+    right: 12px !important;
+    bottom: calc(var(--bottom-nav-height, 64px) + var(--safe-bottom, 0px) + 12px) !important;
+    gap: 10px !important;
+  }
+
+  .fab-btn {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .fab-tooltip {
+    display: none !important;
+  }
+
+  /* Hide desktop-only hover affordances */
+  .group:hover .group-hover\:opacity-100 {
+    opacity: inherit;
+  }
+
+  /* Admission / multi-step forms */
+  .admission-form,
+  .apply-form,
+  form.card,
+  form .card {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* News ticker */
+  .ticker-scroll {
+    animation-duration: 22s;
+  }
+
+  /* Media cards */
+  .aspect-video,
+  .aspect-\[16\/9\] {
+    max-height: 220px;
+  }
+
+  /* Long Hindi/English labels wrap cleanly */
+  h1, h2, h3, h4, p, li, label {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  /* Touch feedback */
+  a, button, summary {
+    -webkit-tap-highlight-color: rgba(19, 27, 46, 0.08);
+  }
+
+  /* Bottom safe padding always when bottom nav present */
+  body.has-bottom-nav main {
+    padding-bottom: 8px;
+  }
+
+  body.has-bottom-nav .site-footer {
+    padding-bottom: 8px;
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 380px) {
+  .font-display,
+  .text-display {
+    font-size: 1.5rem !important;
+  }
+
+  .bottom-nav-item {
+    min-width: 48px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .bottom-nav-item span:last-child {
+    font-size: 9px;
+  }
+
+  .bottom-nav-apply {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Landscape phones */
+@media (max-width: 900px) and (orientation: landscape) {
+  nav .h-20 {
+    height: 48px !important;
+  }
+
+  .py-section-gap {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+}
