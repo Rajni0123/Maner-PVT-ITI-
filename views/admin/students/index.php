@@ -18,10 +18,12 @@ $extraQuery = array_filter([
   </div>
 </div>
 
-<?php require base_path('views/partials/admin-session-tabs.php'); ?>
+<?php
+$baseUrl = 'admin/students';
+require base_path('views/partials/admin-session-tabs.php');
+?>
 
 <form method="get" class="card filter-bar">
-  <input type="hidden" name="session" value="<?= e($filterSession ?? '') ?>">
   <div>
     <label>Status</label>
     <select name="status">
@@ -35,9 +37,18 @@ $extraQuery = array_filter([
     <label>Search</label>
     <input name="q" value="<?= e($q ?? '') ?>" placeholder="Name, mobile, enrollment, father...">
   </div>
+  <div>
+    <label>Session</label>
+    <select name="session">
+      <option value="">All Sessions</option>
+      <?php foreach ($sessions ?? [] as $sn): ?>
+      <option value="<?= e($sn) ?>" <?= ($filterSession ?? '') === $sn ? 'selected' : '' ?>><?= e(session_short_label($sn)) ?></option>
+      <?php endforeach; ?>
+    </select>
+  </div>
   <button class="btn btn-sm btn-primary">Filter</button>
   <?php if (($filterSession ?? '') !== '' || ($filterStatus ?? '') !== '' || ($q ?? '') !== ''): ?>
-  <a href="<?= site_url('admin/students') ?>" class="btn btn-sm btn-outline">Clear All</a>
+  <a href="<?= e(admin_session_query('admin/students', '')) ?>" class="btn btn-sm btn-outline">Clear All</a>
   <?php endif; ?>
 </form>
 
