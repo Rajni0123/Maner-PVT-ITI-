@@ -1218,6 +1218,20 @@ html[data-admin-theme="dark"] .admin-content .admin-session-pill-badge {
   color: var(--admin-error);
 }
 
+.fee-amount-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--admin-on-surface-variant);
+}
+.fee-amount-hint.hidden {
+  display: none;
+}
+.admin-content #paidAmount:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--admin-surface-container);
+}
+
 /* ---- Notifications ---- */
 .admin-notifications-wrap {
   position: relative;

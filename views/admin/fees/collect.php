@@ -60,7 +60,8 @@ $hasFeePlan = !empty($p['has_fee_plan']);
     </div>
     <div>
       <label>Collect Amount (₹) *</label>
-      <input type="number" step="0.01" min="0.01" name="paid_amount" id="paidAmount" required placeholder="Installment amount">
+      <input type="number" step="0.01" min="0.01" name="paid_amount" id="paidAmount" required placeholder="Enter installment amount">
+      <p id="amountHint" class="fee-amount-hint hidden"></p>
     </div>
     <div>
       <label>Payment Method *</label>

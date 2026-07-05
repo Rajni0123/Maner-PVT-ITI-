@@ -713,6 +713,21 @@ function student_admission_fee_profile(?int $admissionId, string $studentName = 
 
     $total = (float) ($admission['total_admission_amount'] ?? 0);
     $advance = (float) ($admission['advance_paid'] ?? 0);
+    if ($total <= 0 && $admissionId > 0) {
+        $studentRow = \App\Core\Database::fetch(
+            'SELECT total_admission_amount, advance_paid FROM students WHERE admission_id = ? LIMIT 1',
+            [$admissionId]
+        );
+        if ($studentRow) {
+            $studentTotal = (float) ($studentRow['total_admission_amount'] ?? 0);
+            if ($studentTotal > 0) {
+                $total = $studentTotal;
+                if ($advance <= 0) {
+                    $advance = (float) ($studentRow['advance_paid'] ?? 0);
+                }
+            }
+        }
+    }
     $paid = 0.0;
     if ($admissionId > 0) {
         $paidRow = \App\Core\Database::fetch(

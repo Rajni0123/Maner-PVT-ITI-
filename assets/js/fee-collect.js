@@ -58,21 +58,58 @@
     document.getElementById('feePlanBalance').textContent = money(row.balance_due);
   }
 
+  function installmentOptions(row) {
+    var options = row.installment_options || [];
+    if (!options.length && row.next_installment) {
+      options = [row.next_installment];
+    }
+    return options;
+  }
+
   function updateAmountLimits(row) {
     var paid = document.getElementById('paidAmount');
     var amount = document.getElementById('feeAmount');
     var submitBtn = document.getElementById('collectSubmitBtn');
+    var hint = document.getElementById('amountHint');
     var balance = Number(row.balance_due || row.pending_due || 0);
+    var options = installmentOptions(row);
+    var canCollect = options.length > 0;
+
     if (paid) {
-      paid.max = balance > 0 ? balance : '';
-      paid.value = balance > 0 ? balance : '';
-      paid.disabled = balance <= 0;
+      if (canCollect) {
+        paid.disabled = false;
+        paid.readOnly = false;
+        paid.value = '';
+        if (row.has_fee_plan && balance > 0) {
+          paid.max = balance;
+          paid.placeholder = 'Enter amount (max ₹' + balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ')';
+        } else {
+          paid.removeAttribute('max');
+          paid.placeholder = 'Enter installment amount';
+        }
+      } else {
+        paid.disabled = true;
+        paid.value = '';
+        paid.placeholder = row.has_fee_plan ? 'Fully paid' : 'Set admission total first';
+      }
     }
-    if (amount && paid) {
-      amount.value = paid.value;
+    if (amount) {
+      amount.value = '';
     }
     if (submitBtn) {
-      submitBtn.disabled = balance <= 0;
+      submitBtn.disabled = !canCollect;
+    }
+    if (hint) {
+      if (canCollect && !row.has_fee_plan) {
+        hint.textContent = 'Admission total not set — enter amount manually for this installment.';
+        hint.classList.remove('hidden');
+      } else if (canCollect && row.has_fee_plan && balance > 0) {
+        hint.textContent = 'Balance due: ' + money(balance);
+        hint.classList.remove('hidden');
+      } else {
+        hint.textContent = '';
+        hint.classList.add('hidden');
+      }
     }
   }
 
@@ -95,7 +132,10 @@
       dueEl.textContent = 'Balance due: ' + money(balance);
       dueEl.classList.remove('hidden');
     } else if (row.has_fee_plan) {
-      dueEl.textContent = 'All fees collected';
+      dueEl.textContent = installmentOptions(row).length ? 'Collect next installment' : 'All fees collected';
+      dueEl.classList.remove('hidden');
+    } else if (installmentOptions(row).length) {
+      dueEl.textContent = 'Manual installment — enter amount below';
       dueEl.classList.remove('hidden');
     } else {
       dueEl.textContent = '';
