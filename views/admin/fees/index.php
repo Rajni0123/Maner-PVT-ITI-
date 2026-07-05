@@ -6,10 +6,21 @@
   </div>
 </div>
 
-<?php
-$baseUrl = 'admin/fees';
-require base_path('views/partials/admin-session-tabs.php');
-?>
+<form method="get" class="card filter-bar">
+  <div>
+    <label>Session</label>
+    <select name="session">
+      <option value="">All Sessions</option>
+      <?php foreach ($sessions ?? [] as $sn): ?>
+      <option value="<?= e($sn) ?>" <?= ($filterSession ?? '') === $sn ? 'selected' : '' ?>><?= e(session_short_label($sn)) ?></option>
+      <?php endforeach; ?>
+    </select>
+  </div>
+  <button class="btn btn-sm btn-primary">Filter</button>
+  <?php if (($filterSession ?? '') !== ''): ?>
+  <a href="<?= e(admin_session_query('admin/fees', '')) ?>" class="btn btn-sm btn-outline">Clear</a>
+  <?php endif; ?>
+</form>
 
 <div class="stat-grid">
   <div class="stat-card">
