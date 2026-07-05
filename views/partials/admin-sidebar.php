@@ -12,7 +12,7 @@ $navItems = [
     ['url' => 'admin', 'icon' => 'dashboard', 'label' => 'Dashboard', 'exact' => true],
     ['url' => 'admin/admissions', 'icon' => 'person_add', 'label' => 'Admissions'],
     ['url' => 'admin/students', 'icon' => 'school', 'label' => 'Students'],
-    ['url' => 'admin/notifications', 'icon' => 'notifications_active', 'label' => 'Notifications'],
+    ['url' => 'admin/notifications', 'icon' => 'notifications_active', 'label' => 'Notifications', 'match' => 'admin/notifications'],
     ['url' => 'admin/contacts', 'icon' => 'contact_support', 'label' => 'Inquiries'],
     ['url' => 'admin/fees', 'icon' => 'payments', 'label' => 'Fee Tracker', 'match' => 'admin/fees', 'except' => 'admin/fees/report'],
     ['url' => 'admin/fees/report', 'icon' => 'assessment', 'label' => 'Fee Report'],

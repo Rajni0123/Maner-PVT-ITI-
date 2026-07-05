@@ -19,8 +19,25 @@ class AdminStudentNotificationController
         $settings = SiteData::settings();
         $header = SiteData::header();
 
-        View::render('admin/notifications/index', [
-            'title' => 'Student Notifications',
+        View::render('admin/notifications/index', self::sendViewData($session, $students, $settings, $header), 'admin');
+    }
+
+    public static function setupForm(): void
+    {
+        Auth::require();
+        $settings = SiteData::settings();
+        $header = SiteData::header();
+
+        View::render('admin/notifications/setup', array_merge(self::setupViewData($settings, $header), [
+            'title' => 'Notification Configuration',
+        ]), 'admin');
+    }
+
+    /** @return array<string,mixed> */
+    private static function sendViewData(string $session, array $students, array $settings, array $header): array
+    {
+        return [
+            'title' => 'Send Notification',
             'students' => $students,
             'sessions' => academic_session_options(),
             'filterSession' => $session,
@@ -30,10 +47,24 @@ class AdminStudentNotificationController
             'notifySubject' => trim((string) ($settings['student_notify_subject'] ?? '')),
             'notifyEmailBody' => trim((string) ($settings['student_notify_email_body'] ?? '')),
             'notifySmsBody' => trim((string) ($settings['student_notify_sms_body'] ?? '')),
+            'smsConfigured' => Sms::isConfigured(),
+            'smsStatus' => Sms::statusLabel(),
+        ];
+    }
+
+    /** @return array<string,mixed> */
+    private static function setupViewData(array $settings, array $header): array
+    {
+        return [
+            'mailFrom' => trim((string) ($settings['mail_from'] ?? $header['email'] ?? '')),
+            'mailFromName' => trim((string) ($settings['mail_from_name'] ?? $header['logo_text'] ?? 'Maner Private ITI')),
+            'notifySubject' => trim((string) ($settings['student_notify_subject'] ?? '')),
+            'notifyEmailBody' => trim((string) ($settings['student_notify_email_body'] ?? '')),
+            'notifySmsBody' => trim((string) ($settings['student_notify_sms_body'] ?? '')),
             'smsSettings' => self::smsSettings($settings),
             'smsConfigured' => Sms::isConfigured(),
             'smsStatus' => Sms::statusLabel(),
-        ], 'admin');
+        ];
     }
 
     public static function setupSave(): void
@@ -62,8 +93,8 @@ class AdminStudentNotificationController
             save_site_setting($key, $value);
         }
 
-        flash('success', 'Notification setup saved.');
-        redirect('admin/notifications');
+        flash('success', 'Notification configuration saved.');
+        redirect('admin/notifications/setup');
     }
 
     public static function send(): void
@@ -94,8 +125,8 @@ class AdminStudentNotificationController
             redirect('admin/notifications');
         }
         if (($channel === 'sms' || $channel === 'both') && !Sms::isConfigured()) {
-            flash('error', 'SMS gateway is not configured. Complete SMS setup first.');
-            redirect('admin/notifications');
+            flash('error', 'SMS gateway is not configured. Complete configuration first.');
+            redirect('admin/notifications/setup');
         }
         if (($channel === 'sms' || $channel === 'both') && $smsBody === '') {
             flash('error', 'SMS message template is required.');

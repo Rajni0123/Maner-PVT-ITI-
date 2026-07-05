@@ -1040,6 +1040,67 @@ html.login-page body.login-body {
   }
 }
 
+.notify-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.35rem;
+  background: var(--admin-surface-container-low);
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.notify-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--admin-radius-lg);
+  font-family: var(--admin-font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--admin-on-surface-variant);
+  text-decoration: none !important;
+  transition: background 0.2s, color 0.2s;
+}
+.notify-tab .material-symbols-outlined {
+  font-size: 18px;
+}
+.notify-tab:hover {
+  background: var(--admin-surface-container);
+  color: var(--admin-primary);
+}
+.notify-tab.is-active {
+  background: var(--admin-primary-container);
+  color: #fff;
+}
+.notify-block-title {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.05rem;
+}
+.notify-setup-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+.notify-channel-grid select,
+.notify-setup-card select,
+.notify-filter-bar select,
+.notify-select {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-surface-container-lowest);
+  color: var(--admin-on-surface);
+  font-family: var(--admin-font-body);
+  font-size: 0.9rem;
+  appearance: auto;
+  cursor: pointer;
+}
 .notify-stat-grid { margin-bottom: 1.25rem; }
 .notify-setup-card { margin-bottom: 1.25rem; }
 .notify-setup-card h3,

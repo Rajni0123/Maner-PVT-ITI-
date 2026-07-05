@@ -156,6 +156,7 @@ $router->get('/admin/profile', fn() => AdminAuthController::profileForm());
 $router->post('/admin/profile', fn() => AdminAuthController::profileSave());
 $router->get('/admin/notifications/feed', fn() => AdminNotificationController::feed());
 $router->get('/admin/notifications', fn() => AdminStudentNotificationController::index());
+$router->get('/admin/notifications/setup', fn() => AdminStudentNotificationController::setupForm());
 $router->post('/admin/notifications/setup', fn() => AdminStudentNotificationController::setupSave());
 $router->post('/admin/notifications/send', fn() => AdminStudentNotificationController::send());
 
