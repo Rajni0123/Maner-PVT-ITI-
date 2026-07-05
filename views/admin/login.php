@@ -1,4 +1,7 @@
-<?php require base_path('views/partials/login-brand.php'); ?>
+<div class="login-card-head">
+  <h2><?= e($pageHeading ?? 'Welcome Back') ?></h2>
+  <p><?= e($pageLead ?? 'Sign in to manage admissions, students, and fees.') ?></p>
+</div>
 
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
@@ -17,5 +20,5 @@
   <div class="login-form-actions">
     <a href="<?= site_url('admin/forgot-password') ?>" class="login-forgot-link">Forgot password?</a>
   </div>
-  <button type="submit" class="btn btn-primary login-submit">Login</button>
+  <button type="submit" class="btn btn-secondary login-submit">Login</button>
 </form>

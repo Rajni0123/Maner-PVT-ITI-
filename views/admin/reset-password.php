@@ -1,8 +1,7 @@
-<?php
-$brandTitle = 'New Password';
-$brandSubtitle = 'Create a secure password';
-require base_path('views/partials/login-brand.php');
-?>
+<div class="login-card-head">
+  <h2>New Password</h2>
+  <p>Create a secure password for your admin account.</p>
+</div>
 
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
@@ -19,7 +18,7 @@ require base_path('views/partials/login-brand.php');
     <label for="password_confirm">Confirm Password</label>
     <input type="password" id="password_confirm" name="password_confirm" placeholder="Re-enter password" required minlength="6" autocomplete="new-password">
   </div>
-  <button type="submit" class="btn btn-primary login-submit">Update Password</button>
+  <button type="submit" class="btn btn-secondary login-submit">Update Password</button>
 </form>
 
 <p class="login-back-link"><a href="<?= site_url('admin/login') ?>">← Back to Login</a></p>
