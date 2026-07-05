@@ -187,6 +187,7 @@ class Security
             'fee_bank_name', 'fee_bank_address', 'fee_bank_holder', 'fee_bank_account', 'fee_bank_ifsc',
             'mail_from', 'mail_from_name',
             'fee_reminder_subject', 'fee_reminder_message', 'fee_reminder_sms_message',
+            'student_notify_subject', 'student_notify_email_body', 'student_notify_sms_body',
             'sms_enabled', 'sms_provider', 'sms_api_key', 'sms_sender_id', 'sms_route',
             'sms_dlt_template_id', 'sms_country_code', 'sms_custom_url', 'sms_custom_method',
         ];

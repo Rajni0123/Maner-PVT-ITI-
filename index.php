@@ -13,6 +13,7 @@ use App\Controllers\AdminFeeController;
 use App\Controllers\AdminCmsController;
 use App\Controllers\AdminSiteController;
 use App\Controllers\AdminStaffSalaryController;
+use App\Controllers\AdminStudentNotificationController;
 use App\Controllers\AdminNotificationController;
 
 // Allow install.php, reset-admin.php, repair-database.php without lock file
@@ -154,6 +155,9 @@ $router->get('/admin/logout', fn() => AdminAuthController::logout());
 $router->get('/admin/profile', fn() => AdminAuthController::profileForm());
 $router->post('/admin/profile', fn() => AdminAuthController::profileSave());
 $router->get('/admin/notifications/feed', fn() => AdminNotificationController::feed());
+$router->get('/admin/notifications', fn() => AdminStudentNotificationController::index());
+$router->post('/admin/notifications/setup', fn() => AdminStudentNotificationController::setupSave());
+$router->post('/admin/notifications/send', fn() => AdminStudentNotificationController::send());
 
 // Admin panel
 $router->get('/admin', fn() => AdminDashboardController::index());

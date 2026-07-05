@@ -1040,6 +1040,63 @@ html.login-page body.login-body {
   }
 }
 
+.notify-stat-grid { margin-bottom: 1.25rem; }
+.notify-setup-card { margin-bottom: 1.25rem; }
+.notify-setup-card h3,
+.notify-setup-card h4 { margin: 0 0 0.75rem; }
+.notify-section-label {
+  margin: 1.25rem 0 0.65rem;
+  font-family: var(--admin-font-label);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-on-surface-variant);
+}
+.notify-help {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--admin-on-surface-variant);
+}
+.notify-vars {
+  margin: 0.75rem 0 1rem;
+  font-size: 0.8rem;
+  color: var(--admin-on-surface-variant);
+}
+.notify-vars code {
+  font-family: var(--admin-font-label);
+  font-size: 0.75rem;
+  background: var(--admin-surface-container-low);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--admin-radius);
+}
+.notify-filter-bar { margin-bottom: 1rem; }
+.notify-send-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.25rem 0 0.75rem;
+}
+.notify-select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+.notify-preview {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--admin-surface-container-low);
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
 .admin-profile-link {
   text-decoration: none !important;
   color: inherit;

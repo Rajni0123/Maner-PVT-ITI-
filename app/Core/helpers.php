@@ -264,6 +264,19 @@ function site_app_logo_url(): string
     return site_institute_logo_url();
 }
 
+function save_site_setting(string $key, string $value): void
+{
+    if (!\App\Core\Security::isAllowedSettingKey($key)) {
+        return;
+    }
+    $exists = \App\Core\Database::fetch('SELECT id FROM site_settings WHERE setting_key = ?', [$key]);
+    if ($exists) {
+        \App\Core\Database::update('site_settings', ['setting_value' => $value], 'setting_key = ?', [$key]);
+    } else {
+        \App\Core\Database::insert('site_settings', ['setting_key' => $key, 'setting_value' => $value]);
+    }
+}
+
 function branding_mime_type(string $filename): string
 {
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
