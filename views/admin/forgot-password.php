@@ -1,14 +1,11 @@
-<div class="login-card-head">
-  <h2>Forgot Password</h2>
-  <p>Enter your registered admin email. We will send a reset link if the account exists.</p>
-</div>
-
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
 <?php endif; ?>
 <?php if ($msg = flash('success')): ?>
 <div class="admin-alert admin-alert-success"><?= e($msg) ?></div>
 <?php endif; ?>
+
+<p class="login-lead">Enter your admin email to receive a reset link.</p>
 
 <form method="post" action="<?= site_url('admin/forgot-password') ?>" class="login-form">
   <?= csrf_field() ?>

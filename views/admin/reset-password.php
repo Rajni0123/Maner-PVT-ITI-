@@ -1,8 +1,3 @@
-<div class="login-card-head">
-  <h2>New Password</h2>
-  <p>Create a secure password for your admin account.</p>
-</div>
-
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
 <?php endif; ?>

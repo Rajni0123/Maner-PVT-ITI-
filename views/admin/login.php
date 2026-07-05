@@ -1,8 +1,3 @@
-<div class="login-card-head">
-  <h2><?= e($pageHeading ?? 'Welcome Back') ?></h2>
-  <p><?= e($pageLead ?? 'Sign in to manage admissions, students, and fees.') ?></p>
-</div>
-
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
 <?php endif; ?>

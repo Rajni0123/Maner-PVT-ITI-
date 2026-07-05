@@ -9,13 +9,14 @@
 </head>
 <body class="login-body">
   <div class="login-wrap">
-    <div class="login-shell">
-      <aside class="login-panel">
-        <?php require base_path('views/partials/login-brand.php'); ?>
-      </aside>
-      <main class="login-card">
-        <?= $content ?>
-      </main>
+    <div class="login-bg" aria-hidden="true">
+      <span class="login-orb login-orb-1"></span>
+      <span class="login-orb login-orb-2"></span>
+      <span class="login-orb login-orb-3"></span>
+    </div>
+    <div class="login-card">
+      <?php require base_path('views/partials/login-brand.php'); ?>
+      <?= $content ?>
     </div>
   </div>
 </body>

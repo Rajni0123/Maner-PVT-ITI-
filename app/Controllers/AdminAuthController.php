@@ -46,7 +46,7 @@ class AdminAuthController
         if (Auth::check()) {
             redirect('admin');
         }
-        View::render('admin/forgot-password', ['title' => 'Forgot Password'], 'admin-auth');
+        View::render('admin/forgot-password', ['title' => 'Forgot Password', 'brandTitle' => 'Forgot Password'], 'admin-auth');
     }
 
     public static function forgotSubmit(): void
@@ -121,6 +121,7 @@ class AdminAuthController
 
         View::render('admin/reset-password', [
             'title' => 'Reset Password',
+            'brandTitle' => 'Reset Password',
             'token' => $token,
         ], 'admin-auth');
     }
