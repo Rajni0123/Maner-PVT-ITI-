@@ -5,10 +5,6 @@ $qs = http_build_query(array_filter([
     'q' => $q ?? '',
 ], static fn($v) => $v !== '' && $v !== null));
 $exportQs = $qs !== '' ? '?' . $qs : '';
-$extraQuery = array_filter([
-    'status' => $filterStatus ?? '',
-    'q' => $q ?? '',
-], static fn($v) => $v !== '' && $v !== null);
 ?>
 <div class="admin-page-header">
   <h1>Students</h1>
@@ -17,11 +13,6 @@ $extraQuery = array_filter([
     <a href="<?= site_url('admin/students/print' . $exportQs) ?>" target="_blank" class="btn btn-outline btn-sm">Export PDF</a>
   </div>
 </div>
-
-<?php
-$baseUrl = 'admin/students';
-require base_path('views/partials/admin-session-tabs.php');
-?>
 
 <form method="get" class="card filter-bar">
   <div>

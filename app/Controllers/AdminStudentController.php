@@ -23,7 +23,6 @@ class AdminStudentController
             'filterSession' => $session,
             'filterStatus' => $status,
             'totalCount' => self::countStudents($session, $q, $status),
-            'sessionStats' => academic_session_stats(),
         ], 'admin');
     }
 
