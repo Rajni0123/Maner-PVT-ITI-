@@ -661,3 +661,140 @@ function academic_session_fee_totals(string $session): array
     }
     return ['total' => $total, 'paid' => $paid, 'cnt' => $cnt];
 }
+
+function ensure_admission_fee_schema(): void
+{
+    static $checked = false;
+    if ($checked) {
+        return;
+    }
+    $checked = true;
+
+    foreach (['admissions', 'students'] as $table) {
+        try {
+            \App\Core\Database::fetch("SELECT 1 FROM {$table} LIMIT 1");
+        } catch (\Throwable $e) {
+            continue;
+        }
+        if (!\App\Core\Database::fetch("SHOW COLUMNS FROM {$table} LIKE 'total_admission_amount'")) {
+            \App\Core\Database::connect()->exec(
+                "ALTER TABLE {$table}
+                 ADD COLUMN total_admission_amount DECIMAL(12,2) NULL AFTER shift,
+                 ADD COLUMN advance_paid DECIMAL(12,2) DEFAULT 0 AFTER total_admission_amount"
+            );
+        }
+    }
+}
+
+/** @return array{total_admission_amount:float,advance_paid:float,total_paid:float,balance_due:float,has_fee_plan:bool,installment_options:list<string>,next_installment:string} */
+function student_admission_fee_profile(?int $admissionId, string $studentName = '', string $mobile = ''): array
+{
+    ensure_admission_fee_schema();
+    $admission = null;
+    if ($admissionId > 0) {
+        $admission = \App\Core\Database::fetch(
+            'SELECT id, name, father_name, mobile, trade, total_admission_amount, advance_paid FROM admissions WHERE id = ?',
+            [$admissionId]
+        );
+    }
+    if (!$admission && $studentName !== '') {
+        $admission = \App\Core\Database::fetch(
+            'SELECT a.id, a.name, a.father_name, a.mobile, a.trade, a.total_admission_amount, a.advance_paid
+             FROM students s
+             JOIN admissions a ON a.id = s.admission_id
+             WHERE s.student_name = ? AND (s.mobile = ? OR ? = "" OR s.mobile IS NULL)
+             LIMIT 1',
+            [$studentName, $mobile, $mobile]
+        );
+        if ($admission) {
+            $admissionId = (int) $admission['id'];
+        }
+    }
+
+    $total = (float) ($admission['total_admission_amount'] ?? 0);
+    $advance = (float) ($admission['advance_paid'] ?? 0);
+    $paid = 0.0;
+    if ($admissionId > 0) {
+        $paidRow = \App\Core\Database::fetch(
+            'SELECT COALESCE(SUM(paid_amount), 0) AS paid FROM student_fees WHERE admission_id = ?',
+            [$admissionId]
+        );
+        $paid = (float) ($paidRow['paid'] ?? 0);
+    }
+    $balance = max(0, round($total - $paid, 2));
+
+    $installmentCount = 0;
+    if ($admissionId > 0) {
+        $installmentCount = (int) (\App\Core\Database::fetch(
+            "SELECT COUNT(*) AS c FROM student_fees WHERE admission_id = ? AND fee_type LIKE 'Installment %'",
+            [$admissionId]
+        )['c'] ?? 0);
+    }
+    $nextNum = $installmentCount + 1;
+    $nextInstallment = 'Installment ' . $nextNum;
+
+    $options = [];
+    if ($total > 0 && $balance > 0) {
+        $options[] = $nextInstallment;
+    } elseif ($total <= 0 && $admissionId > 0) {
+        $options[] = $nextInstallment;
+    }
+
+    return [
+        'total_admission_amount' => $total,
+        'advance_paid' => $advance,
+        'total_paid' => $paid,
+        'balance_due' => $balance,
+        'has_fee_plan' => $total > 0,
+        'installment_options' => $options,
+        'next_installment' => $nextInstallment,
+        'admission_id' => $admissionId,
+    ];
+}
+
+function validate_admission_approval_amounts(float $total, float $advance): ?string
+{
+    if ($total <= 0) {
+        return 'Total admission amount is required to approve.';
+    }
+    if ($advance < 0) {
+        return 'Advance paid cannot be negative.';
+    }
+    if ($advance > $total) {
+        return 'Advance paid cannot exceed total admission amount.';
+    }
+    return null;
+}
+
+function record_admission_advance_fee(array $admission, int $admissionId): void
+{
+    $advance = round((float) ($admission['advance_paid'] ?? 0), 2);
+    if ($advance <= 0) {
+        return;
+    }
+    $exists = \App\Core\Database::fetch(
+        "SELECT id FROM student_fees WHERE admission_id = ? AND fee_type = 'Advance Payment' LIMIT 1",
+        [$admissionId]
+    );
+    if ($exists) {
+        return;
+    }
+    $total = round((float) ($admission['total_admission_amount'] ?? 0), 2);
+    \App\Core\Database::insert('student_fees', [
+        'admission_id' => $admissionId,
+        'student_name' => $admission['name'] ?? '',
+        'father_name' => $admission['father_name'] ?? null,
+        'mobile' => $admission['mobile'] ?? null,
+        'trade' => $admission['trade'] ?? '',
+        'fee_type' => 'Advance Payment',
+        'total_amount' => $total,
+        'amount' => $advance,
+        'paid_amount' => $advance,
+        'status' => 'Paid',
+        'payment_date' => date('Y-m-d'),
+        'payment_method' => $_POST['advance_payment_method'] ?? 'Cash',
+        'receipt_number' => receipt_no(),
+        'academic_year' => date('Y') . '-' . (date('Y') + 1),
+        'notes' => 'Advance paid at admission approval',
+    ]);
+}

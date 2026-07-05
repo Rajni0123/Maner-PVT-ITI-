@@ -71,12 +71,7 @@ require base_path('views/partials/admin-session-tabs.php');
     <div class="action-btns">
       <a href="<?= site_url('admin/admissions/view/' . $a['id']) ?>" class="btn btn-sm btn-primary">View</a>
       <?php if (strtolower((string) $a['status']) === 'pending'): ?>
-      <form method="post" action="<?= site_url('admin/admissions/status/' . $a['id']) ?>" style="display:inline">
-        <?= csrf_field() ?>
-        <input type="hidden" name="status" value="Approved">
-        <input type="hidden" name="return" value="list">
-        <button type="submit" class="btn btn-sm btn-success">Approve</button>
-      </form>
+      <a href="<?= site_url('admin/admissions/view/' . $a['id'] . '#approve') ?>" class="btn btn-sm btn-success">Approve</a>
       <form method="post" action="<?= site_url('admin/admissions/status/' . $a['id']) ?>" style="display:inline" data-confirm="Reject this application?">
         <?= csrf_field() ?>
         <input type="hidden" name="status" value="Rejected">

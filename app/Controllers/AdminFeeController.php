@@ -202,7 +202,14 @@ class AdminFeeController
         Auth::require();
         $prefill = self::collectPrefill();
         if (!empty($prefill['student_name'])) {
-            $prefill['pending_due'] = self::studentPendingDue($prefill['student_name'], $prefill['mobile'] ?? '');
+            $admissionId = (int) ($prefill['admission_id'] ?? 0);
+            $profile = student_admission_fee_profile(
+                $admissionId,
+                $prefill['student_name'],
+                $prefill['mobile'] ?? ''
+            );
+            $prefill = array_merge($prefill, $profile);
+            $prefill['pending_due'] = $profile['balance_due'];
         }
         View::render('admin/fees/collect', [
             'title' => 'Collect Fee',
@@ -247,8 +254,9 @@ class AdminFeeController
         $results = [];
 
         foreach ($students as $s) {
-            $due = self::studentPendingDue($s['student_name'], $s['mobile'] ?? '');
-            $results[] = [
+            $admissionId = (int) ($s['admission_id'] ?? 0);
+            $profile = student_admission_fee_profile($admissionId, $s['student_name'], $s['mobile'] ?? '');
+            $results[] = array_merge([
                 'key' => 'student-' . $s['id'],
                 'type' => 'Student',
                 'id' => (int) $s['id'],
@@ -258,10 +266,10 @@ class AdminFeeController
                 'trade' => $s['trade'] ?? '',
                 'session' => $s['session'] ?? '',
                 'enrollment' => $s['enrollment_number'] ?? '',
-                'admission_id' => (int) ($s['admission_id'] ?? 0),
-                'pending_due' => $due,
+                'admission_id' => $admissionId,
+                'pending_due' => $profile['balance_due'],
                 'label' => trim(($s['enrollment_number'] ? $s['enrollment_number'] . ' · ' : '') . ($s['trade'] ?? '') . ($s['session'] ? ' · ' . $s['session'] : '')),
-            ];
+            ], $profile);
         }
 
         $studentAdmissionIds = array_filter(array_column($students, 'admission_id'));
@@ -269,8 +277,8 @@ class AdminFeeController
             if (in_array((int) $a['id'], array_map('intval', $studentAdmissionIds), true)) {
                 continue;
             }
-            $due = self::studentPendingDue($a['name'], $a['mobile'] ?? '');
-            $results[] = [
+            $profile = student_admission_fee_profile((int) $a['id'], $a['name'], $a['mobile'] ?? '');
+            $results[] = array_merge([
                 'key' => 'admission-' . $a['id'],
                 'type' => 'Admission',
                 'id' => (int) $a['id'],
@@ -281,9 +289,9 @@ class AdminFeeController
                 'session' => $a['session'] ?? '',
                 'enrollment' => '',
                 'admission_id' => (int) $a['id'],
-                'pending_due' => $due,
+                'pending_due' => $profile['balance_due'],
                 'label' => trim(($a['trade'] ?? '') . ($a['session'] ? ' · ' . $a['session'] : '')),
-            ];
+            ], $profile);
         }
 
         if ($digits !== '' && strlen($digits) >= 4) {
@@ -299,8 +307,13 @@ class AdminFeeController
         echo json_encode(array_slice($results, 0, 15));
     }
 
-    private static function studentPendingDue(string $name, string $mobile): float
+    private static function studentPendingDue(string $name, string $mobile, int $admissionId = 0): float
     {
+        $profile = student_admission_fee_profile($admissionId, $name, $mobile);
+        if ($profile['has_fee_plan']) {
+            return $profile['balance_due'];
+        }
+
         $row = Database::fetch(
             'SELECT COALESCE(SUM(amount - paid_amount), 0) AS due
              FROM student_fees
@@ -356,6 +369,7 @@ class AdminFeeController
                     'father_name' => $row['father_name'] ?? '',
                     'mobile' => $row['mobile'] ?? '',
                     'trade' => $row['trade'] ?? '',
+                    'session' => $row['session'] ?? '',
                 ];
             }
         }
@@ -364,41 +378,80 @@ class AdminFeeController
 
     private static function storeFee(bool $fromCollect): void
     {
-        $amount = (float) ($_POST['amount'] ?? 0);
-        $paid = (float) ($_POST['paid_amount'] ?? 0);
-        if ($amount <= 0) {
-            flash('error', 'Fee amount must be greater than zero.');
-            redirect($fromCollect ? 'admin/fees/collect' : 'admin/fees');
+        $amount = round((float) ($_POST['amount'] ?? 0), 2);
+        $paid = round((float) ($_POST['paid_amount'] ?? 0), 2);
+        $admissionId = (int) ($_POST['admission_id'] ?? 0);
+        $studentName = trim($_POST['student_name'] ?? '');
+        $mobile = trim($_POST['mobile'] ?? '');
+        $feeType = trim($_POST['fee_type'] ?? '');
+        $profile = student_admission_fee_profile($admissionId, $studentName, $mobile);
+
+        if ($fromCollect && $profile['has_fee_plan']) {
+            if ($profile['balance_due'] <= 0) {
+                flash('error', 'No balance due for this student.');
+                redirect('admin/fees/collect');
+            }
+            if ($feeType === '' || !in_array($feeType, $profile['installment_options'], true)) {
+                flash('error', 'Select a valid installment.');
+                redirect('admin/fees/collect');
+            }
+            if ($paid <= 0) {
+                flash('error', 'Enter installment amount to collect.');
+                redirect('admin/fees/collect');
+            }
+            if ($paid > $profile['balance_due']) {
+                flash('error', 'Amount cannot exceed balance due of ₹' . number_format($profile['balance_due'], 2));
+                redirect('admin/fees/collect');
+            }
+            $amount = $paid;
+        } elseif ($fromCollect) {
+            if (!preg_match('/^Installment \d+$/', $feeType)) {
+                flash('error', 'Select installment type (Installment 1, 2, ...).');
+                redirect('admin/fees/collect');
+            }
+            if ($paid <= 0) {
+                flash('error', 'Enter the amount collected now.');
+                redirect('admin/fees/collect');
+            }
+            $amount = $paid;
+        } else {
+            if ($amount <= 0) {
+                flash('error', 'Fee amount must be greater than zero.');
+                redirect('admin/fees');
+            }
+            if ($paid > $amount) {
+                flash('error', 'Paid amount cannot exceed total fee.');
+                redirect('admin/fees');
+            }
+            if ($paid <= 0) {
+                flash('error', 'Enter the amount collected now.');
+                redirect('admin/fees');
+            }
         }
-        if ($paid > $amount) {
-            flash('error', 'Paid amount cannot exceed total fee.');
-            redirect($fromCollect ? 'admin/fees/collect' : 'admin/fees');
-        }
-        if ($paid <= 0) {
-            flash('error', 'Enter the amount collected now.');
-            redirect($fromCollect ? 'admin/fees/collect' : 'admin/fees');
-        }
-        if (trim($_POST['student_name'] ?? '') === '' || trim($_POST['trade'] ?? '') === '') {
+
+        if ($studentName === '' || trim($_POST['trade'] ?? '') === '') {
             flash('error', 'Student name and trade are required.');
             redirect($fromCollect ? 'admin/fees/collect' : 'admin/fees');
         }
-        $status = $paid >= $amount ? 'Paid' : 'Partially Paid';
+
+        $status = 'Paid';
+        $masterTotal = $profile['has_fee_plan'] ? $profile['total_admission_amount'] : $amount;
 
         $feeId = Database::insert('student_fees', [
-            'admission_id' => $_POST['admission_id'] ?: null,
-            'student_name' => trim($_POST['student_name'] ?? ''),
+            'admission_id' => $admissionId ?: null,
+            'student_name' => $studentName,
             'father_name' => trim($_POST['father_name'] ?? ''),
-            'mobile' => trim($_POST['mobile'] ?? ''),
+            'mobile' => $mobile,
             'trade' => trim($_POST['trade'] ?? ''),
-            'fee_type' => trim($_POST['fee_type'] ?? 'Tuition Fee'),
-            'total_amount' => $amount,
+            'fee_type' => $feeType !== '' ? $feeType : 'Installment 1',
+            'total_amount' => $masterTotal,
             'amount' => $amount,
             'paid_amount' => $paid,
             'due_date' => $_POST['due_date'] ?: null,
             'status' => $status,
-            'payment_date' => $paid > 0 ? date('Y-m-d') : null,
-            'payment_method' => $_POST['payment_method'] ?? null,
-            'receipt_number' => $paid > 0 ? receipt_no() : null,
+            'payment_date' => date('Y-m-d'),
+            'payment_method' => $_POST['payment_method'] ?? 'Cash',
+            'receipt_number' => receipt_no(),
             'academic_year' => trim($_POST['academic_year'] ?? date('Y') . '-' . (date('Y') + 1)),
             'notes' => trim($_POST['notes'] ?? ''),
         ]);

@@ -6,6 +6,7 @@
   var clearBtn = document.getElementById('clearStudent');
   var searchUrl = window.FEE_SEARCH_URL;
   var debounceTimer = null;
+  var currentRow = null;
 
   if (!searchInput || !resultsBox) return;
 
@@ -18,7 +19,65 @@
     el.classList.toggle('hidden', hide);
   }
 
+  function updateFeeTypeOptions(row) {
+    var select = document.getElementById('feeTypeSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    var options = row.installment_options || [];
+    if (!options.length && row.next_installment) {
+      options = [row.next_installment];
+    }
+    if (!options.length) {
+      var opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = row.balance_due > 0 ? 'No installment available' : 'Fully paid';
+      select.appendChild(opt);
+      select.disabled = true;
+      return;
+    }
+    options.forEach(function (label) {
+      var opt = document.createElement('option');
+      opt.value = label;
+      opt.textContent = label;
+      select.appendChild(opt);
+    });
+    select.disabled = false;
+  }
+
+  function updateFeePlanSummary(row) {
+    var box = document.getElementById('feePlanSummary');
+    if (!box) return;
+    if (!row.has_fee_plan && !(row.total_admission_amount > 0)) {
+      setHidden(box, true);
+      return;
+    }
+    setHidden(box, false);
+    document.getElementById('feePlanTotal').textContent = money(row.total_admission_amount);
+    document.getElementById('feePlanAdvance').textContent = money(row.advance_paid);
+    document.getElementById('feePlanPaid').textContent = money(row.total_paid);
+    document.getElementById('feePlanBalance').textContent = money(row.balance_due);
+  }
+
+  function updateAmountLimits(row) {
+    var paid = document.getElementById('paidAmount');
+    var amount = document.getElementById('feeAmount');
+    var submitBtn = document.getElementById('collectSubmitBtn');
+    var balance = Number(row.balance_due || row.pending_due || 0);
+    if (paid) {
+      paid.max = balance > 0 ? balance : '';
+      paid.value = balance > 0 ? balance : '';
+      paid.disabled = balance <= 0;
+    }
+    if (amount && paid) {
+      amount.value = paid.value;
+    }
+    if (submitBtn) {
+      submitBtn.disabled = balance <= 0;
+    }
+  }
+
   function fillForm(row) {
+    currentRow = row;
     document.getElementById('studentName').value = row.name || '';
     document.getElementById('fatherName').value = row.father_name || '';
     document.getElementById('mobile').value = row.mobile || '';
@@ -31,13 +90,21 @@
     document.getElementById('selectedStudentMeta').textContent = meta;
 
     var dueEl = document.getElementById('selectedStudentDue');
-    if (row.pending_due > 0) {
-      dueEl.textContent = 'Previous pending due: ' + money(row.pending_due);
+    var balance = Number(row.balance_due || row.pending_due || 0);
+    if (balance > 0) {
+      dueEl.textContent = 'Balance due: ' + money(balance);
+      dueEl.classList.remove('hidden');
+    } else if (row.has_fee_plan) {
+      dueEl.textContent = 'All fees collected';
       dueEl.classList.remove('hidden');
     } else {
       dueEl.textContent = '';
       dueEl.classList.add('hidden');
     }
+
+    updateFeePlanSummary(row);
+    updateFeeTypeOptions(row);
+    updateAmountLimits(row);
 
     setHidden(selectedBox, false);
     setHidden(form, false);
@@ -46,8 +113,10 @@
   }
 
   function clearSelection() {
+    currentRow = null;
     setHidden(selectedBox, true);
     setHidden(form, true);
+    setHidden(document.getElementById('feePlanSummary'), true);
     searchInput.value = '';
     searchInput.focus();
     resultsBox.innerHTML = '';
@@ -61,12 +130,13 @@
       return;
     }
     resultsBox.innerHTML = items.map(function (row) {
+      var due = Number(row.balance_due || row.pending_due || 0);
       return (
         '<button type="button" class="fee-search-item" data-row="' + encodeURIComponent(JSON.stringify(row)) + '">' +
         '<span class="fee-search-item-name">' + escapeHtml(row.name) + '</span>' +
         '<span class="fee-search-item-meta">' + escapeHtml(row.label || row.trade || '') + '</span>' +
         (row.mobile ? '<span class="fee-search-item-phone">' + escapeHtml(row.mobile) + '</span>' : '') +
-        (row.pending_due > 0 ? '<span class="fee-search-item-due">Due ' + money(row.pending_due) + '</span>' : '') +
+        (due > 0 ? '<span class="fee-search-item-due">Due ' + money(due) + '</span>' : '') +
         '</button>'
       );
     }).join('');
@@ -126,12 +196,25 @@
     clearBtn.addEventListener('click', clearSelection);
   }
 
-  var amount = document.getElementById('feeAmount');
   var paid = document.getElementById('paidAmount');
-  if (amount && paid) {
-    amount.addEventListener('input', function () {
-      if (!paid.value || paid.value === '0') {
-        paid.value = amount.value;
+  var amount = document.getElementById('feeAmount');
+  if (paid && amount) {
+    paid.addEventListener('input', function () {
+      amount.value = paid.value;
+      if (currentRow && currentRow.has_fee_plan) {
+        var max = Number(currentRow.balance_due || 0);
+        if (parseFloat(paid.value) > max) {
+          paid.value = max;
+          amount.value = max;
+        }
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', function () {
+      if (paid && amount) {
+        amount.value = paid.value;
       }
     });
   }

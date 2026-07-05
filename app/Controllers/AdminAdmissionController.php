@@ -52,6 +52,7 @@ class AdminAdmissionController
             'title' => 'Admission ' . app_id($id, $row['created_at'] ?? null, $row['session'] ?? null),
             'admission' => $row,
             'appId' => app_id($id, $row['created_at'] ?? null, $row['session'] ?? null),
+            'feeProfile' => student_admission_fee_profile($id),
         ], 'admin');
     }
 
@@ -107,11 +108,49 @@ class AdminAdmissionController
             redirect('admin/admissions/view/' . $id);
         }
 
-        Database::update('admissions', ['status' => $status], 'id = ?', [$id]);
-
-        if ($status === 'Approved') {
-            self::createStudentFromAdmission($id);
+        $current = Database::fetch('SELECT status, total_admission_amount FROM admissions WHERE id = ?', [$id]);
+        if (!$current) {
+            redirect('admin/admissions');
         }
+
+        if ($status === 'Approved' && strtolower((string) ($current['status'] ?? '')) !== 'approved') {
+            $total = round((float) ($_POST['total_admission_amount'] ?? 0), 2);
+            $advance = round((float) ($_POST['advance_paid'] ?? 0), 2);
+            $error = validate_admission_approval_amounts($total, $advance);
+            if ($error) {
+                flash('error', $error);
+                redirect('admin/admissions/view/' . $id);
+            }
+
+            Database::update('admissions', [
+                'status' => $status,
+                'total_admission_amount' => $total,
+                'advance_paid' => $advance,
+            ], 'id = ?', [$id]);
+
+            self::createStudentFromAdmission($id);
+            $admission = Database::fetch('SELECT * FROM admissions WHERE id = ?', [$id]);
+            if ($admission) {
+                record_admission_advance_fee($admission, $id);
+                Database::update('students', [
+                    'total_admission_amount' => $total,
+                    'advance_paid' => $advance,
+                ], 'admission_id = ?', [$id]);
+            }
+
+            flash('success', 'Admission approved. Total ₹' . number_format($total, 2) . ', advance ₹' . number_format($advance, 2) . ' recorded.');
+            if (($_POST['return'] ?? '') === 'list') {
+                redirect('admin/admissions');
+            }
+            redirect('admin/admissions/view/' . $id);
+        }
+
+        if ($status === 'Approved' && strtolower((string) ($current['status'] ?? '')) === 'approved') {
+            flash('success', 'Admission is already approved.');
+            redirect('admin/admissions/view/' . $id);
+        }
+
+        Database::update('admissions', ['status' => $status], 'id = ?', [$id]);
 
         flash('success', 'Status updated to ' . $status);
         if (($_POST['return'] ?? '') === 'list') {
@@ -282,7 +321,26 @@ class AdminAdmissionController
             ]);
 
             if ($status === 'Approved') {
+                $total = round((float) ($_POST['total_admission_amount'] ?? 0), 2);
+                $advance = round((float) ($_POST['advance_paid'] ?? 0), 2);
+                $error = validate_admission_approval_amounts($total, $advance);
+                if ($error) {
+                    flash('error', $error);
+                    redirect('admin/admissions/add');
+                }
+                Database::update('admissions', [
+                    'total_admission_amount' => $total,
+                    'advance_paid' => $advance,
+                ], 'id = ?', [$id]);
                 self::createStudentFromAdmission($id);
+                $admission = Database::fetch('SELECT * FROM admissions WHERE id = ?', [$id]);
+                if ($admission) {
+                    record_admission_advance_fee($admission, $id);
+                    Database::update('students', [
+                        'total_admission_amount' => $total,
+                        'advance_paid' => $advance,
+                    ], 'admission_id = ?', [$id]);
+                }
             }
 
             flash('success', 'Admission added successfully.');
@@ -342,6 +400,8 @@ class AdminAdmissionController
             'class_12th_subject' => $a['class_12th_subject'],
             'session' => $a['session'],
             'shift' => $a['shift'],
+            'total_admission_amount' => $a['total_admission_amount'] ?? null,
+            'advance_paid' => $a['advance_paid'] ?? 0,
             'dob' => $a['dob'],
             'gender' => $a['gender'],
             'declaration_agreed' => 1,

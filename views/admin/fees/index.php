@@ -40,22 +40,11 @@ require base_path('views/partials/admin-session-tabs.php');
 <?php endif; ?>
 
 <div class="grid-2">
-  <form method="post" action="<?= site_url('admin/fees') ?>" class="card">
-    <h3>Create Fee Record</h3>
-    <?= csrf_field() ?>
-    <div class="form-grid">
-      <div><label>Student Name *</label><input name="student_name" required></div>
-      <div><label>Father Name</label><input name="father_name"></div>
-      <div><label>Mobile</label><input name="mobile"></div>
-      <div><label>Trade *</label><input name="trade" required></div>
-      <div><label>Fee Type</label><select name="fee_type"><option>Tuition Fee</option><option>Admission Fee</option><option>Examination Fee</option></select></div>
-      <div><label>Amount *</label><input type="number" step="0.01" name="amount" required></div>
-      <div><label>Paid Now</label><input type="number" step="0.01" name="paid_amount" value="0"></div>
-      <div><label>Due Date</label><input type="date" name="due_date"></div>
-      <div><label>Payment Method</label><select name="payment_method"><option>Cash</option><option>UPI</option><option>Bank Transfer</option></select></div>
-    </div>
-    <button class="btn btn-primary" style="margin-top:1rem">Create Fee</button>
-  </form>
+  <div class="card">
+    <h3>Quick Collect</h3>
+    <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">Student se installment collect karne ke liye Collect Fee page use karein.</p>
+    <a href="<?= site_url('admin/fees/collect') ?>" class="btn btn-primary">+ Collect Installment</a>
+  </div>
 
   <div class="table-wrap">
     <table>

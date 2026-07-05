@@ -62,7 +62,7 @@
     </div>
     <div>
       <label>Status</label>
-      <select name="status">
+      <select name="status" id="admissionCreateStatus">
         <option value="Pending">Pending</option>
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
@@ -122,10 +122,41 @@
     <div id="bscc_doc_field" style="display:none"><label>BSCC Document</label><input type="file" name="student_credit_card_doc" accept="image/*,.pdf"></div>
   </div>
 
+  <div id="approvalAmountFields" class="form-grid hidden" style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--admin-outline-variant)">
+    <div class="form-grid" style="grid-column:1/-1;width:100%">
+      <h3 style="margin:0;grid-column:1/-1">Approval Fee (required if Approved)</h3>
+    </div>
+    <div><label>Total Admission Amount (₹) *</label><input type="number" step="0.01" min="0.01" name="total_admission_amount" placeholder="e.g. 52000"></div>
+    <div><label>Advance Paid (₹)</label><input type="number" step="0.01" min="0" name="advance_paid" value="0"></div>
+    <div><label>Advance Payment Method</label>
+      <select name="advance_payment_method">
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+      </select>
+    </div>
+  </div>
+
   <button class="btn btn-primary" style="margin-top:1.5rem">Save Admission</button>
 </form>
 
 <script src="<?= asset('js/form-utils.js') ?>"></script>
+<script>
+(function () {
+  var status = document.getElementById('admissionCreateStatus');
+  var fields = document.getElementById('approvalAmountFields');
+  if (status && fields) {
+    function toggleApproval() {
+      var show = status.value === 'Approved';
+      fields.classList.toggle('hidden', !show);
+      var total = fields.querySelector('[name=total_admission_amount]');
+      if (total) total.required = show;
+    }
+    status.addEventListener('change', toggleApproval);
+    toggleApproval();
+  }
+})();
+</script>
 <script>
 (function () {
   const bsccSelect = document.getElementById('student_credit_card');

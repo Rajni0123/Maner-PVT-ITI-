@@ -1193,6 +1193,31 @@ html[data-admin-theme="dark"] .admin-content .admin-session-pill-badge {
   margin-bottom: 1rem;
 }
 
+.fee-plan-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-surface-container-low);
+}
+.fee-plan-stat span {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--admin-on-surface-variant);
+  margin-bottom: 0.15rem;
+}
+.fee-plan-stat strong {
+  font-size: 1rem;
+}
+.fee-plan-stat-due strong {
+  color: var(--admin-error);
+}
+
 /* ---- Notifications ---- */
 .admin-notifications-wrap {
   position: relative;

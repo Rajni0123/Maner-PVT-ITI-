@@ -13,34 +13,91 @@ $bsccApplied = trim((string) ($d['student_credit_card'] ?? 'No'));
   </div>
 </div>
 
-<div class="card">
+<div class="card" id="approve">
   <?php if (strtolower((string) $d['status']) === 'pending'): ?>
-  <div class="action-btns" style="margin-bottom:1rem">
-    <form method="post" action="<?= site_url('admin/admissions/status/' . $d['id']) ?>" style="display:inline">
-      <?= csrf_field() ?>
-      <input type="hidden" name="status" value="Approved">
-      <button type="submit" class="btn btn-success btn-sm">✓ Approve Application</button>
-    </form>
-    <form method="post" action="<?= site_url('admin/admissions/status/' . $d['id']) ?>" style="display:inline" data-confirm="Reject this application?">
-      <?= csrf_field() ?>
-      <input type="hidden" name="status" value="Rejected">
-      <button type="submit" class="btn btn-danger btn-sm">✕ Reject</button>
-    </form>
+  <h3>Approve Admission</h3>
+  <p style="margin:0 0 1rem;font-size:0.85rem;color:var(--admin-on-surface-variant)">Total admission amount required. Advance payment (if any) will be recorded automatically.</p>
+  <form method="post" action="<?= site_url('admin/admissions/status/' . $d['id']) ?>">
+    <?= csrf_field() ?>
+    <input type="hidden" name="status" value="Approved">
+    <div class="form-grid">
+      <div>
+        <label>Total Admission Amount (₹) *</label>
+        <input type="number" step="0.01" min="0.01" name="total_admission_amount" id="totalAdmissionAmount" required placeholder="e.g. 52000">
+      </div>
+      <div>
+        <label>Advance Paid (₹)</label>
+        <input type="number" step="0.01" min="0" name="advance_paid" id="advancePaid" value="0" placeholder="0">
+      </div>
+      <div>
+        <label>Advance Payment Method</label>
+        <select name="advance_payment_method">
+          <option value="Cash">Cash</option>
+          <option value="UPI">UPI</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Cheque">Cheque</option>
+        </select>
+      </div>
+      <div>
+        <label>Balance After Advance</label>
+        <input type="text" id="balanceAfterAdvance" readonly value="₹ 0.00" style="background:var(--admin-surface-container-low)">
+      </div>
+    </div>
+    <div class="action-btns" style="margin-top:1rem">
+      <button type="submit" class="btn btn-success btn-sm">✓ Approve &amp; Create Student</button>
+    </div>
+  </form>
+  <form method="post" action="<?= site_url('admin/admissions/status/' . $d['id']) ?>" style="display:inline;margin-top:0.5rem" data-confirm="Reject this application?">
+    <?= csrf_field() ?>
+    <input type="hidden" name="status" value="Rejected">
+    <button type="submit" class="btn btn-danger btn-sm">✕ Reject</button>
+  </form>
+  <?php elseif (strtolower((string) $d['status']) === 'approved'): ?>
+  <?php $fp = $feeProfile ?? student_admission_fee_profile((int) $d['id']); ?>
+  <h3>Fee Summary</h3>
+  <div class="detail-grid">
+    <div class="detail-item"><label>Total Admission Amount</label><p><strong><?= format_inr($fp['total_admission_amount'] ?? $d['total_admission_amount'] ?? 0) ?></strong></p></div>
+    <div class="detail-item"><label>Advance Paid</label><p><strong><?= format_inr($fp['advance_paid'] ?? $d['advance_paid'] ?? 0) ?></strong></p></div>
+    <div class="detail-item"><label>Total Collected</label><p><strong><?= format_inr($fp['total_paid'] ?? 0) ?></strong></p></div>
+    <div class="detail-item"><label>Balance Due</label><p><strong><?= format_inr($fp['balance_due'] ?? 0) ?></strong></p></div>
   </div>
+  <?php if (($fp['balance_due'] ?? 0) > 0): ?>
+  <a href="<?= site_url('admin/fees/collect?admission_id=' . $d['id']) ?>" class="btn btn-secondary btn-sm" style="margin-top:0.5rem">Collect Next Installment</a>
   <?php endif; ?>
+  <?php else: ?>
   <form method="post" action="<?= site_url('admin/admissions/status/' . $d['id']) ?>" class="form-row-inline">
     <?= csrf_field() ?>
     <div>
       <label>Update Status</label>
       <select name="status">
-        <?php foreach (['Pending', 'Approved', 'Rejected'] as $s): ?>
+        <?php foreach (['Pending', 'Rejected'] as $s): ?>
         <option value="<?= $s ?>" <?= strcasecmp($d['status'], $s) === 0 ? 'selected' : '' ?>><?= $s ?></option>
         <?php endforeach; ?>
       </select>
     </div>
     <button class="btn btn-primary btn-sm">Save Status</button>
   </form>
+  <?php endif; ?>
 </div>
+
+<script>
+(function () {
+  var total = document.getElementById('totalAdmissionAmount');
+  var advance = document.getElementById('advancePaid');
+  var balance = document.getElementById('balanceAfterAdvance');
+  if (!total || !advance || !balance) return;
+  function update() {
+    var t = parseFloat(total.value) || 0;
+    var a = parseFloat(advance.value) || 0;
+    if (a > t) a = t;
+    var b = Math.max(0, t - a);
+    balance.value = '₹ ' + b.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  total.addEventListener('input', update);
+  advance.addEventListener('input', update);
+  update();
+})();
+</script>
 
 <div class="card detail-grid">
   <?php

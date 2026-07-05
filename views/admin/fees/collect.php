@@ -1,6 +1,7 @@
 <?php
 $p = $prefill ?? [];
 $hasPrefill = !empty($p['student_name']);
+$hasFeePlan = !empty($p['has_fee_plan']);
 ?>
 <div class="admin-page-header">
   <h1>Collect Fee</h1>
@@ -35,25 +36,32 @@ $hasPrefill = !empty($p['student_name']);
   <?= csrf_field() ?>
   <input type="hidden" name="admission_id" id="admissionId" value="<?= e((string) ($p['admission_id'] ?? '')) ?>">
   <input type="hidden" name="student_source" id="studentSource" value="<?= e($p['source'] ?? '') ?>">
+  <input type="hidden" name="amount" id="feeAmount" value="">
 
-  <h3>Fee Details</h3>
+  <h3>Installment Collection</h3>
+
+  <div id="feePlanSummary" class="fee-plan-summary hidden">
+    <div class="fee-plan-stat"><span>Total Admission</span><strong id="feePlanTotal">—</strong></div>
+    <div class="fee-plan-stat"><span>Advance Paid</span><strong id="feePlanAdvance">—</strong></div>
+    <div class="fee-plan-stat"><span>Collected</span><strong id="feePlanPaid">—</strong></div>
+    <div class="fee-plan-stat fee-plan-stat-due"><span>Balance Due</span><strong id="feePlanBalance">—</strong></div>
+  </div>
+
   <div class="form-grid">
     <div><label>Student Name *</label><input name="student_name" id="studentName" value="<?= e($p['student_name'] ?? '') ?>" required readonly></div>
     <div><label>Father Name</label><input name="father_name" id="fatherName" value="<?= e($p['father_name'] ?? '') ?>" readonly></div>
     <div><label>Mobile</label><input name="mobile" id="mobile" value="<?= e($p['mobile'] ?? '') ?>" readonly></div>
     <div><label>Trade *</label><input name="trade" id="trade" value="<?= e($p['trade'] ?? '') ?>" required readonly></div>
     <div>
-      <label>Fee Type *</label>
-      <select name="fee_type" required>
-        <option>Admission Fee</option>
-        <option selected>Tuition Fee</option>
-        <option>Examination Fee</option>
-        <option>Workshop Fee</option>
-        <option>Other</option>
+      <label>Installment *</label>
+      <select name="fee_type" id="feeTypeSelect" required>
+        <option value="">Select student first</option>
       </select>
     </div>
-    <div><label>Total Fee Amount *</label><input type="number" step="0.01" min="0.01" name="amount" id="feeAmount" required></div>
-    <div><label>Collect Now *</label><input type="number" step="0.01" min="0.01" name="paid_amount" id="paidAmount" required></div>
+    <div>
+      <label>Collect Amount (₹) *</label>
+      <input type="number" step="0.01" min="0.01" name="paid_amount" id="paidAmount" required placeholder="Installment amount">
+    </div>
     <div>
       <label>Payment Method *</label>
       <select name="payment_method" required>
@@ -63,19 +71,18 @@ $hasPrefill = !empty($p['student_name']);
         <option value="Cheque">Cheque</option>
       </select>
     </div>
-    <div><label>Due Date (if balance)</label><input type="date" name="due_date"></div>
     <div><label>Academic Year</label><input name="academic_year" value="<?= e(date('Y') . '-' . (date('Y') + 1)) ?>"></div>
   </div>
   <div style="margin-top:1rem"><label>Notes</label><textarea name="notes" rows="2" placeholder="Optional remarks"></textarea></div>
-  <button class="btn btn-primary" style="margin-top:1rem">
+  <button class="btn btn-primary" style="margin-top:1rem" id="collectSubmitBtn">
     <span class="material-symbols-outlined" style="font-size:18px">receipt_long</span>
-    Collect Fee &amp; Generate Receipt
+    Collect Installment &amp; Generate Receipt
   </button>
 </form>
 
 <script>
 window.FEE_SEARCH_URL = <?= json_encode(site_url('admin/fees/search')) ?>;
-window.FEE_PREFILL = <?= json_encode($hasPrefill ? [
+window.FEE_PREFILL = <?= json_encode($hasPrefill ? array_merge([
     'key' => $p['source'] ?? '',
     'name' => $p['student_name'] ?? '',
     'father_name' => $p['father_name'] ?? '',
@@ -85,7 +92,14 @@ window.FEE_PREFILL = <?= json_encode($hasPrefill ? [
     'enrollment' => $p['enrollment'] ?? '',
     'admission_id' => (int) ($p['admission_id'] ?? 0),
     'label' => trim(($p['trade'] ?? '') . (!empty($p['session']) ? ' · ' . $p['session'] : '')),
-    'pending_due' => (float) ($p['pending_due'] ?? 0),
-] : null) ?>;
+    'pending_due' => (float) ($p['balance_due'] ?? $p['pending_due'] ?? 0),
+    'total_admission_amount' => (float) ($p['total_admission_amount'] ?? 0),
+    'advance_paid' => (float) ($p['advance_paid'] ?? 0),
+    'total_paid' => (float) ($p['total_paid'] ?? 0),
+    'balance_due' => (float) ($p['balance_due'] ?? 0),
+    'has_fee_plan' => !empty($p['has_fee_plan']),
+    'installment_options' => $p['installment_options'] ?? [],
+    'next_installment' => $p['next_installment'] ?? 'Installment 1',
+], []) : null) ?>;
 </script>
-<script src="<?= asset('js/fee-collect.js') ?>"></script>
+<script src="<?= asset('js/fee-collect.js') ?>?v=<?= (int) @filemtime(base_path('assets/js/fee-collect.js')) ?>"></script>
