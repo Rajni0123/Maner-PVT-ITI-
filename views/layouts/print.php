@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title><?= e($title ?? 'Print') ?></title>
-  <link rel="stylesheet" href="<?= asset('css/print.css') ?>">
+  <link rel="stylesheet" href="<?= asset('css/print.css') ?>?v=<?= (int) @filemtime(base_path('assets/css/print.css')) ?>">
 </head>
 <body class="print-page">
   <div class="no-print">

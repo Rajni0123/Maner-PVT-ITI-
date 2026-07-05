@@ -498,6 +498,18 @@ class AdminFeeController
         if (!$fee) {
             redirect('admin/fees');
         }
-        View::render('print/fee-receipt', ['fee' => $fee, 'title' => 'Fee Receipt'], 'print');
+        View::render('print/fee-receipt', ['fee' => self::receiptPayload($fee), 'title' => 'Fee Receipt'], 'print');
+    }
+
+    /** @return array<string,mixed> */
+    private static function receiptPayload(array $fee): array
+    {
+        if (!empty($fee['admission_id'])) {
+            $admission = Database::fetch('SELECT session FROM admissions WHERE id = ?', [(int) $fee['admission_id']]);
+            if ($admission && !empty($admission['session'])) {
+                $fee['session'] = $admission['session'];
+            }
+        }
+        return $fee;
     }
 }
