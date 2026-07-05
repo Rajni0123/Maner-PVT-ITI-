@@ -12,17 +12,18 @@ class AdminStudentController
     {
         Auth::require();
         $q = trim($_GET['q'] ?? '');
-        $session = trim($_GET['session'] ?? '');
+        $session = admin_resolve_session_filter();
         $status = trim($_GET['status'] ?? '');
 
         View::render('admin/students/index', [
             'title' => 'Students',
             'students' => self::queryStudents($session, $q, $status),
-            'sessions' => self::sessionOptions(),
+            'sessions' => academic_session_options(),
             'q' => $q,
             'filterSession' => $session,
             'filterStatus' => $status,
             'totalCount' => self::countStudents($session, $q, $status),
+            'sessionStats' => academic_session_stats(),
         ], 'admin');
     }
 
@@ -137,25 +138,6 @@ class AdminStudentController
         }
 
         return [$sql, $params];
-    }
-
-    /** @return list<string> */
-    private static function sessionOptions(): array
-    {
-        $names = [];
-        foreach (Database::fetchAll('SELECT session_name FROM sessions ORDER BY start_year DESC') as $row) {
-            $name = trim((string) ($row['session_name'] ?? ''));
-            if ($name !== '') {
-                $names[$name] = $name;
-            }
-        }
-        foreach (Database::fetchAll('SELECT DISTINCT session FROM students WHERE session IS NOT NULL AND session != "" ORDER BY session DESC') as $row) {
-            $name = trim((string) ($row['session'] ?? ''));
-            if ($name !== '') {
-                $names[$name] = $name;
-            }
-        }
-        return array_values($names);
     }
 
     public static function view(int $id): void

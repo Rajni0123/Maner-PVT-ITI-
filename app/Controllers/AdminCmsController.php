@@ -134,9 +134,11 @@ class AdminCmsController
     public static function sessions(): void
     {
         Auth::require();
+        $items = Database::fetchAll('SELECT * FROM sessions ORDER BY start_year DESC');
         View::render('admin/cms/sessions', [
             'title' => 'Sessions',
-            'items' => Database::fetchAll('SELECT * FROM sessions ORDER BY start_year DESC'),
+            'items' => $items,
+            'sessionStats' => academic_session_stats(),
         ], 'admin');
     }
 

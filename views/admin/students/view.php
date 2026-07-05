@@ -17,7 +17,7 @@ $bsccApplied = $admission['student_credit_card'] ?? 'No';
     <a href="<?= site_url('admin/admissions/view/' . $s['admission_id']) ?>" class="btn btn-outline btn-sm">View Admission</a>
     <a href="<?= site_url('admin/admissions/print/' . $s['admission_id']) ?>" target="_blank" class="btn btn-primary btn-sm">Print Form</a>
     <?php endif; ?>
-    <a href="<?= site_url('admin/students') ?>" class="btn btn-outline btn-sm">Back</a>
+    <a href="<?= e(admin_session_query('admin/students', trim((string) ($s['session'] ?? '')))) ?>" class="btn btn-outline btn-sm">Back to Students</a>
   </div>
 </div>
 
@@ -26,7 +26,7 @@ $bsccApplied = $admission['student_credit_card'] ?? 'No';
   <img src="<?= e(upload_url($photoFile)) ?>" alt="Student photo" style="width:100px;height:120px;object-fit:cover;border:2px solid #131b2e;background:#f3f4f6">
   <div>
     <p style="font-weight:700;font-size:1.1rem;margin:0"><?= e($s['student_name']) ?></p>
-    <p style="color:var(--admin-on-surface-variant);margin:0.25rem 0 0"><?= e($s['trade']) ?> &nbsp;|&nbsp; Session <?= e($s['session'] ?? '—') ?> &nbsp;|&nbsp; <span class="badge badge-<?= strtolower($s['status']) ?>"><?= e($s['status']) ?></span></p>
+    <p style="color:var(--admin-on-surface-variant);margin:0.25rem 0 0"><?= e($s['trade']) ?> &nbsp;|&nbsp; Session <?= e(session_short_label($s['session'] ?? '') ?: '—') ?> &nbsp;|&nbsp; <span class="badge badge-<?= strtolower($s['status']) ?>"><?= e($s['status']) ?></span></p>
     <?php if ($s['enrollment_number']): ?><p style="margin:0.35rem 0 0;font-size:0.9rem">Enrollment: <strong><?= e($s['enrollment_number']) ?></strong></p><?php endif; ?>
   </div>
 </div>

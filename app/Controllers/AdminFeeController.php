@@ -11,22 +11,37 @@ class AdminFeeController
     public static function index(): void
     {
         Auth::require();
-        $fees = Database::fetchAll('SELECT * FROM student_fees ORDER BY created_at DESC LIMIT 200');
-        $summary = Database::fetch(
-            'SELECT SUM(amount) total, SUM(paid_amount) paid, COUNT(*) cnt FROM student_fees'
-        );
+        $session = admin_resolve_session_filter();
+
+        if ($session !== '') {
+            $fees = academic_session_fees($session, 200, 'recent');
+            $totals = academic_session_fee_totals($session);
+            $summary = [
+                'total' => $totals['total'],
+                'paid' => $totals['paid'],
+                'cnt' => $totals['cnt'],
+            ];
+        } else {
+            $fees = Database::fetchAll('SELECT * FROM student_fees ORDER BY created_at DESC LIMIT 200');
+            $summary = Database::fetch(
+                'SELECT SUM(amount) total, SUM(paid_amount) paid, COUNT(*) cnt FROM student_fees'
+            );
+        }
+
         View::render('admin/fees/index', [
             'title' => 'Fee Management',
             'fees' => $fees,
             'summary' => $summary,
+            'filterSession' => $session,
+            'sessions' => academic_session_options(),
         ], 'admin');
     }
 
     public static function report(): void
     {
         Auth::require();
-        $session = trim($_GET['session'] ?? '');
-        $sessions = self::sessionOptions();
+        $session = admin_resolve_session_filter();
+        $sessions = academic_session_options();
 
         $fees = [];
         $summary = ['total' => 0, 'paid' => 0, 'cnt' => 0, 'students' => 0];
@@ -117,27 +132,7 @@ class AdminFeeController
     /** @return list<array<string,mixed>> */
     private static function feesForSession(string $session): array
     {
-        return Database::fetchAll(
-            'SELECT * FROM (
-                SELECT f.*,
-                    COALESCE(
-                        (SELECT s.session FROM students s
-                         WHERE f.admission_id IS NOT NULL AND s.admission_id = f.admission_id
-                         LIMIT 1),
-                        (SELECT a.session FROM admissions a
-                         WHERE a.id = f.admission_id
-                         LIMIT 1),
-                        (SELECT s2.session FROM students s2
-                         WHERE s2.student_name = f.student_name
-                           AND (f.mobile IS NULL OR f.mobile = "" OR s2.mobile = f.mobile)
-                         LIMIT 1)
-                    ) AS fee_session
-                FROM student_fees f
-            ) t
-            WHERE fee_session = ?
-            ORDER BY student_name ASC, created_at DESC',
-            [$session]
-        );
+        return academic_session_fees($session);
     }
 
     /** @param list<array<string,mixed>> $fees */

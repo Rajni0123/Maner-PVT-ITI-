@@ -5,6 +5,10 @@ $qs = http_build_query(array_filter([
     'q' => $q ?? '',
 ], static fn($v) => $v !== '' && $v !== null));
 $exportQs = $qs !== '' ? '?' . $qs : '';
+$extraQuery = array_filter([
+    'status' => $filterStatus ?? '',
+    'q' => $q ?? '',
+], static fn($v) => $v !== '' && $v !== null);
 ?>
 <div class="admin-page-header">
   <h1>Students</h1>
@@ -14,16 +18,10 @@ $exportQs = $qs !== '' ? '?' . $qs : '';
   </div>
 </div>
 
+<?php require base_path('views/partials/admin-session-tabs.php'); ?>
+
 <form method="get" class="card filter-bar">
-  <div>
-    <label>Session</label>
-    <select name="session">
-      <option value="">All Sessions</option>
-      <?php foreach ($sessions as $sn): ?>
-      <option value="<?= e($sn) ?>" <?= ($filterSession ?? '') === $sn ? 'selected' : '' ?>><?= e($sn) ?></option>
-      <?php endforeach; ?>
-    </select>
-  </div>
+  <input type="hidden" name="session" value="<?= e($filterSession ?? '') ?>">
   <div>
     <label>Status</label>
     <select name="status">
@@ -39,7 +37,7 @@ $exportQs = $qs !== '' ? '?' . $qs : '';
   </div>
   <button class="btn btn-sm btn-primary">Filter</button>
   <?php if (($filterSession ?? '') !== '' || ($filterStatus ?? '') !== '' || ($q ?? '') !== ''): ?>
-  <a href="<?= site_url('admin/students') ?>" class="btn btn-sm btn-outline">Clear</a>
+  <a href="<?= site_url('admin/students') ?>" class="btn btn-sm btn-outline">Clear All</a>
   <?php endif; ?>
 </form>
 
@@ -47,7 +45,7 @@ $exportQs = $qs !== '' ? '?' . $qs : '';
   Showing <strong><?= (int) count($students) ?></strong>
   of <strong><?= (int) ($totalCount ?? count($students)) ?></strong> students
   <?php if (($filterSession ?? '') !== ''): ?>
-  · Session <strong><?= e($filterSession) ?></strong>
+  · Session <strong><?= e(session_short_label($filterSession)) ?></strong>
   <?php endif; ?>
 </p>
 
@@ -68,7 +66,13 @@ $exportQs = $qs !== '' ? '?' . $qs : '';
 </thead>
 <tbody>
 <?php if (empty($students)): ?>
-<tr><td colspan="9" style="text-align:center;padding:1.5rem;color:#64748b">No students found for this filter.</td></tr>
+<tr><td colspan="9" style="text-align:center;padding:1.5rem;color:#64748b">
+  <?php if (($filterSession ?? '') !== ''): ?>
+  No students found for session <?= e(session_short_label($filterSession)) ?>.
+  <?php else: ?>
+  No students found for this filter.
+  <?php endif; ?>
+</td></tr>
 <?php else: ?>
 <?php foreach ($students as $i => $s): ?>
 <tr>
@@ -78,7 +82,7 @@ $exportQs = $qs !== '' ? '?' . $qs : '';
   <td><?= e(format_mobile($s['mobile'] ?? '')) ?></td>
   <td><?= e($s['enrollment_number'] ?? '—') ?></td>
   <td><?= e($s['trade']) ?></td>
-  <td><?= e($s['session'] ?? '—') ?></td>
+  <td><?= e(session_short_label($s['session'] ?? '') ?: '—') ?></td>
   <td><?= e($s['status']) ?></td>
   <td>
     <a href="<?= site_url('admin/students/view/' . $s['id']) ?>" class="btn btn-sm btn-primary">View</a>

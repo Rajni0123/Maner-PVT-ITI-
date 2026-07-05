@@ -8,7 +8,12 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
 <div class="admin-page-header">
   <div>
     <h1>Dashboard</h1>
-    <p style="margin:0.35rem 0 0;font-size:0.9rem;color:var(--admin-on-surface-variant)"><?= e(date('F Y')) ?> · live institute data</p>
+    <p style="margin:0.35rem 0 0;font-size:0.9rem;color:var(--admin-on-surface-variant)">
+      <?= e(date('F Y')) ?> · live institute data
+      <?php if (($filterSession ?? '') !== ''): ?>
+      · Session <strong><?= e(session_short_label($filterSession)) ?></strong>
+      <?php endif; ?>
+    </p>
   </div>
   <div class="admin-page-actions">
     <a href="<?= site_url('admin/admissions/export') ?>" class="btn btn-primary btn-sm">
@@ -18,9 +23,14 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
   </div>
 </div>
 
+<?php
+$baseUrl = 'admin';
+require base_path('views/partials/admin-session-tabs.php');
+?>
+
 <div class="stat-grid dashboard-stat-grid">
   <div class="stat-card">
-    <span>Approved Admissions</span>
+    <span>Approved Admissions<?php if (($filterSession ?? '') !== ''): ?> <small>(<?= e(session_short_label($filterSession)) ?>)</small><?php endif; ?></span>
     <strong><?= (int) ($s['approved'] ?? 0) ?> <small style="font-size:0.55em;font-weight:600;color:var(--admin-on-surface-variant)">/ <?= (int) ($s['total_seats'] ?? 0) ?> seats</small></strong>
     <div class="dashboard-bar"><i style="width:<?= e((string) $fillPct) ?>%"></i></div>
     <p class="dashboard-stat-note"><?= (int) ($s['pending'] ?? 0) ?> pending review</p>
@@ -31,12 +41,12 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
     <p class="dashboard-stat-note"><?= (int) ($s['inquiries_today'] ?? 0) ?> today<?php if (($s['inquiries_delta'] ?? 0) > 0): ?> · +<?= (int) $s['inquiries_delta'] ?> vs yesterday<?php endif; ?></p>
   </div>
   <div class="stat-card">
-    <span>Fees Collected</span>
+    <span>Fees Collected<?php if (($filterSession ?? '') !== ''): ?> <small>(<?= e(session_short_label($filterSession)) ?>)</small><?php endif; ?></span>
     <strong><?= format_inr($s['fees_paid'] ?? 0) ?></strong>
     <p class="dashboard-stat-note"><?= (int) ($s['fees_pct'] ?? 0) ?>% of <?= format_inr($s['fees_total'] ?? 0) ?> billed</p>
   </div>
   <div class="stat-card">
-    <span>Active Students</span>
+    <span>Active Students<?php if (($filterSession ?? '') !== ''): ?> <small>(<?= e(session_short_label($filterSession)) ?>)</small><?php endif; ?></span>
     <strong><?= (int) ($s['students'] ?? 0) ?></strong>
     <p class="dashboard-stat-note"><?= (int) ($s['total_applications'] ?? 0) ?> total applications</p>
   </div>
@@ -45,7 +55,7 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
 <div class="dashboard-main-grid">
   <div class="card dashboard-chart-card">
     <div class="dashboard-card-head">
-      <h3>Admissions (last 6 months)</h3>
+      <h3>Admissions (last 6 months)<?php if (($filterSession ?? '') !== ''): ?> — <?= e(session_short_label($filterSession)) ?><?php endif; ?></h3>
     </div>
     <div class="dashboard-chart">
       <?php foreach ($pipeline as $bar): ?>
@@ -62,9 +72,10 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
     <h3>Quick Actions</h3>
     <div class="dashboard-actions">
       <a href="<?= site_url('admin/contacts') ?>"><span class="material-symbols-outlined">mail</span> Inquiries<?php if (($s['unread_inquiries'] ?? 0) > 0): ?> <b><?= (int) $s['unread_inquiries'] ?></b><?php endif; ?></a>
-      <a href="<?= site_url('admin/admissions') ?>"><span class="material-symbols-outlined">person_add</span> Admissions<?php if (($s['pending'] ?? 0) > 0): ?> <b><?= (int) $s['pending'] ?></b><?php endif; ?></a>
-      <a href="<?= site_url('admin/students') ?>"><span class="material-symbols-outlined">school</span> Students</a>
-      <a href="<?= site_url('admin/fees/collect') ?>"><span class="material-symbols-outlined">payments</span> Collect Fee</a>
+      <a href="<?= e(admin_session_query('admin/admissions', $filterSession ?? '')) ?>"><span class="material-symbols-outlined">person_add</span> Admissions<?php if (($s['pending'] ?? 0) > 0): ?> <b><?= (int) $s['pending'] ?></b><?php endif; ?></a>
+      <a href="<?= e(admin_session_query('admin/students', $filterSession ?? '')) ?>"><span class="material-symbols-outlined">school</span> Students</a>
+      <a href="<?= e(admin_session_query('admin/fees', $filterSession ?? '')) ?>"><span class="material-symbols-outlined">payments</span> Fee Tracker</a>
+      <a href="<?= e(admin_session_query('admin/fees/report', $filterSession ?? '')) ?>"><span class="material-symbols-outlined">assessment</span> Fee Report</a>
       <a href="<?= site_url('admin/staff/salary') ?>"><span class="material-symbols-outlined">receipt_long</span> Salary Slip</a>
     </div>
   </div>
@@ -72,8 +83,8 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
 
 <div class="card">
   <div class="dashboard-card-head">
-    <h3>Recent Activity</h3>
-    <a href="<?= site_url('admin/admissions') ?>" class="btn btn-outline btn-sm">View all</a>
+    <h3>Recent Activity<?php if (($filterSession ?? '') !== ''): ?> — <?= e(session_short_label($filterSession)) ?><?php endif; ?></h3>
+    <a href="<?= e(admin_session_query('admin/admissions', $filterSession ?? '')) ?>" class="btn btn-outline btn-sm">View all</a>
   </div>
   <div class="table-wrap">
     <table>
@@ -107,7 +118,7 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
               'sort' => strtotime($r['created_at'] ?? ''),
               'type' => 'Application',
               'name' => $r['name'],
-              'detail' => ($r['trade'] ?? '') . ($r['session'] ? ' · ' . $r['session'] : ''),
+              'detail' => ($r['trade'] ?? '') . ($r['session'] ? ' · ' . session_short_label($r['session']) : ''),
               'status' => $r['status'] ?? 'Pending',
               'badge' => strtolower($r['status'] ?? 'pending'),
               'url' => site_url('admin/admissions/view/' . $r['id']),
@@ -118,7 +129,13 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
       $activity = array_slice($activity, 0, 8);
       ?>
       <?php if (!$activity): ?>
-      <tr><td colspan="6">No inquiries or applications yet.</td></tr>
+      <tr><td colspan="6">
+        <?php if (($filterSession ?? '') !== ''): ?>
+        No activity for session <?= e(session_short_label($filterSession)) ?> yet.
+        <?php else: ?>
+        No inquiries or applications yet.
+        <?php endif; ?>
+      </td></tr>
       <?php else: foreach ($activity as $row): ?>
       <tr>
         <td><?= e($row['type']) ?></td>

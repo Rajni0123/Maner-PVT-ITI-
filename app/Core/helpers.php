@@ -501,3 +501,150 @@ function is_installed(): bool
 {
     return is_file(installed_lock_path());
 }
+
+/** Short display label: 2026-28 → 26-28 */
+function session_short_label(?string $session): string
+{
+    $session = trim((string) $session);
+    if ($session === '') {
+        return '';
+    }
+    if (preg_match('/^(\d{4})-(\d{2})$/', $session, $m)) {
+        return substr($m[1], 2) . '-' . $m[2];
+    }
+    return $session;
+}
+
+/** Resolve academic session filter from query string or persisted admin choice. */
+function admin_resolve_session_filter(): string
+{
+    if (array_key_exists('session', $_GET)) {
+        $session = trim((string) $_GET['session']);
+        if ($session !== '') {
+            $_SESSION['admin_academic_session'] = $session;
+        } else {
+            unset($_SESSION['admin_academic_session']);
+        }
+        return $session;
+    }
+    return trim((string) ($_SESSION['admin_academic_session'] ?? ''));
+}
+
+/** @return list<string> */
+function academic_session_options(): array
+{
+    $names = [];
+    try {
+        foreach (\App\Core\Database::fetchAll('SELECT session_name FROM sessions ORDER BY start_year DESC') as $row) {
+            $name = trim((string) ($row['session_name'] ?? ''));
+            if ($name !== '') {
+                $names[$name] = $name;
+            }
+        }
+    } catch (\Throwable $e) {
+    }
+    foreach (['students', 'admissions'] as $table) {
+        try {
+            foreach (\App\Core\Database::fetchAll(
+                "SELECT DISTINCT session FROM {$table} WHERE session IS NOT NULL AND session != '' ORDER BY session DESC"
+            ) as $row) {
+                $name = trim((string) ($row['session'] ?? ''));
+                if ($name !== '') {
+                    $names[$name] = $name;
+                }
+            }
+        } catch (\Throwable $e) {
+        }
+    }
+    return array_values($names);
+}
+
+/** @return array<string, array{students:int, admissions:int, pending:int}> */
+function academic_session_stats(): array
+{
+    $stats = [];
+    foreach (academic_session_options() as $sessionName) {
+        $stats[$sessionName] = ['students' => 0, 'admissions' => 0, 'pending' => 0];
+    }
+    try {
+        foreach (\App\Core\Database::fetchAll(
+            'SELECT session, COUNT(*) AS c FROM students WHERE session IS NOT NULL AND session != "" GROUP BY session'
+        ) as $row) {
+            $sessionName = trim((string) ($row['session'] ?? ''));
+            if ($sessionName === '') {
+                continue;
+            }
+            if (!isset($stats[$sessionName])) {
+                $stats[$sessionName] = ['students' => 0, 'admissions' => 0, 'pending' => 0];
+            }
+            $stats[$sessionName]['students'] = (int) ($row['c'] ?? 0);
+        }
+        foreach (\App\Core\Database::fetchAll(
+            'SELECT session, status, COUNT(*) AS c FROM admissions WHERE session IS NOT NULL AND session != "" GROUP BY session, status'
+        ) as $row) {
+            $sessionName = trim((string) ($row['session'] ?? ''));
+            if ($sessionName === '') {
+                continue;
+            }
+            if (!isset($stats[$sessionName])) {
+                $stats[$sessionName] = ['students' => 0, 'admissions' => 0, 'pending' => 0];
+            }
+            $stats[$sessionName]['admissions'] += (int) ($row['c'] ?? 0);
+            if (strtolower((string) ($row['status'] ?? '')) === 'pending') {
+                $stats[$sessionName]['pending'] += (int) ($row['c'] ?? 0);
+            }
+        }
+    } catch (\Throwable $e) {
+    }
+    return $stats;
+}
+
+/** Build query string preserving filters except session. */
+function admin_session_query(string $baseUrl, string $session = '', array $extra = []): string
+{
+    $params = array_filter(array_merge($extra, ['session' => $session]), static fn($v) => $v !== '' && $v !== null);
+    $qs = http_build_query($params);
+    return site_url($baseUrl . ($qs !== '' ? '?' . $qs : ''));
+}
+
+/** @return list<array<string,mixed>> */
+function academic_session_fees(string $session, int $limit = 0, string $order = 'name'): array
+{
+    $orderSql = $order === 'recent' ? 'created_at DESC' : 'student_name ASC, created_at DESC';
+    $limitSql = $limit > 0 ? ' LIMIT ' . (int) $limit : '';
+    return \App\Core\Database::fetchAll(
+        'SELECT * FROM (
+            SELECT f.*,
+                COALESCE(
+                    (SELECT s.session FROM students s
+                     WHERE f.admission_id IS NOT NULL AND s.admission_id = f.admission_id
+                     LIMIT 1),
+                    (SELECT a.session FROM admissions a
+                     WHERE a.id = f.admission_id
+                     LIMIT 1),
+                    (SELECT s2.session FROM students s2
+                     WHERE s2.student_name = f.student_name
+                       AND (f.mobile IS NULL OR f.mobile = "" OR s2.mobile = f.mobile)
+                     LIMIT 1)
+                ) AS fee_session
+            FROM student_fees f
+        ) t
+        WHERE fee_session = ?
+        ORDER BY ' . $orderSql . $limitSql,
+        [$session]
+    );
+}
+
+/** @return array{total:float, paid:float, cnt:int} */
+function academic_session_fee_totals(string $session): array
+{
+    $total = 0.0;
+    $paid = 0.0;
+    $cnt = 0;
+    foreach (academic_session_fees($session) as $fee) {
+        $total += (float) ($fee['amount'] ?? 0);
+        $paid += (float) ($fee['paid_amount'] ?? 0);
+        $cnt++;
+    }
+    return ['total' => $total, 'paid' => $paid, 'cnt' => $cnt];
+}

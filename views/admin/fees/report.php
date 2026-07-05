@@ -13,18 +13,10 @@ $pending = max(0, (float) ($summary['total'] ?? 0) - (float) ($summary['paid'] ?
   </div>
 </div>
 
-<form method="get" class="card filter-bar">
-  <div>
-    <label>Session *</label>
-    <select name="session" required>
-      <option value="">Select Session</option>
-      <?php foreach ($sessions as $sn): ?>
-      <option value="<?= e($sn) ?>" <?= ($filterSession ?? '') === $sn ? 'selected' : '' ?>><?= e($sn) ?></option>
-      <?php endforeach; ?>
-    </select>
-  </div>
-  <button class="btn btn-sm btn-primary">View Report</button>
-</form>
+<?php
+$baseUrl = 'admin/fees/report';
+require base_path('views/partials/admin-session-tabs.php');
+?>
 
 <?php if (($filterSession ?? '') === ''): ?>
 <div class="card" style="margin-top:1rem;color:#64748b">
@@ -42,7 +34,7 @@ $pending = max(0, (float) ($summary['total'] ?? 0) - (float) ($summary['paid'] ?
 
 <?php if (!empty($byTrade)): ?>
 <div class="card" style="margin:1rem 0">
-  <h3 style="margin:0 0 0.75rem">Trade-wise Summary — Session <?= e($filterSession) ?></h3>
+  <h3 style="margin:0 0 0.75rem">Trade-wise Summary — Session <?= e(session_short_label($filterSession)) ?></h3>
   <div class="table-wrap">
   <table>
   <thead><tr><th>Trade</th><th>Records</th><th>Total</th><th>Collected</th><th>Pending</th></tr></thead>
@@ -82,7 +74,7 @@ $pending = max(0, (float) ($summary['total'] ?? 0) - (float) ($summary['paid'] ?
 </thead>
 <tbody>
 <?php if (empty($fees)): ?>
-<tr><td colspan="11" style="text-align:center;padding:1.5rem;color:#64748b">No fee records found for session <?= e($filterSession) ?>.</td></tr>
+<tr><td colspan="11" style="text-align:center;padding:1.5rem;color:#64748b">No fee records found for session <?= e(session_short_label($filterSession)) ?>.</td></tr>
 <?php else: ?>
 <?php foreach ($fees as $i => $f): ?>
 <?php $due = max(0, (float) $f['amount'] - (float) $f['paid_amount']); ?>

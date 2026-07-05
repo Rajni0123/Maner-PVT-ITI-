@@ -576,6 +576,102 @@ html[data-admin-theme="dark"] nav.fixed.bottom-0 {
 .filter-bar select,
 .filter-bar input { max-width: 220px; }
 
+.session-tabs-wrap {
+  margin-bottom: 1.25rem;
+}
+.session-tabs-label {
+  margin: 0 0 0.5rem;
+  font-family: var(--admin-font-label);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--admin-on-surface-variant);
+}
+.session-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.session-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-surface-container-lowest);
+  color: var(--admin-on-surface);
+  text-decoration: none;
+  font-family: var(--admin-font-label);
+  font-size: 0.8rem;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.session-tab:hover {
+  border-color: var(--admin-primary);
+  background: var(--admin-surface-container-low);
+}
+.session-tab.is-active {
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+  color: var(--admin-on-primary);
+}
+.session-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.session-tab.is-active .session-tab-count {
+  background: rgba(255, 255, 255, 0.2);
+}
+.session-tabs-hint {
+  margin: 0.65rem 0 0;
+  font-size: 0.875rem;
+  color: var(--admin-on-surface-variant);
+}
+.session-manage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.session-manage-card {
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-surface-container-lowest);
+  padding: 1rem;
+}
+.session-manage-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+.session-manage-card .session-full-name {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--admin-on-surface-variant);
+}
+.session-manage-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.85rem;
+}
+.session-manage-stats strong {
+  display: block;
+  font-size: 1.1rem;
+}
+.session-manage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 /* ---- Login ---- */
 .login-wrap {
   min-height: 100vh;

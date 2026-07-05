@@ -1,3 +1,9 @@
+<?php
+$extraQuery = array_filter([
+    'status' => $filterStatus ?? '',
+    'trade' => $filterTrade ?? '',
+], static fn($v) => $v !== '' && $v !== null);
+?>
 <div class="admin-page-header">
   <h1>Admissions</h1>
   <div class="admin-page-actions">
@@ -5,7 +11,14 @@
     <a href="<?= site_url('admin/admissions/export') ?>" class="btn btn-outline btn-sm">Export CSV</a>
   </div>
 </div>
+
+<?php
+$baseUrl = 'admin/admissions';
+require base_path('views/partials/admin-session-tabs.php');
+?>
+
 <form method="get" class="card filter-bar">
+  <input type="hidden" name="session" value="<?= e($filterSession ?? '') ?>">
   <div>
     <label>Status</label>
     <select name="status">
@@ -20,18 +33,38 @@
     <input name="trade" placeholder="Trade filter" value="<?= e($filterTrade ?? '') ?>">
   </div>
   <button class="btn btn-primary btn-sm">Filter</button>
+  <?php if (($filterSession ?? '') !== '' || ($filterStatus ?? '') !== '' || ($filterTrade ?? '') !== ''): ?>
+  <a href="<?= site_url('admin/admissions') ?>" class="btn btn-sm btn-outline">Clear All</a>
+  <?php endif; ?>
 </form>
+
+<p class="text-muted" style="margin:0.5rem 0 1rem">
+  Showing <strong><?= count($admissions) ?></strong> admission<?= count($admissions) === 1 ? '' : 's' ?>
+  <?php if (($filterSession ?? '') !== ''): ?>
+  · Session <strong><?= e(session_short_label($filterSession)) ?></strong>
+  <?php endif; ?>
+</p>
+
 <div class="table-wrap">
 <table>
 <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Trade</th><th>Session</th><th>BSCC</th><th>Status</th><th>Action</th></tr></thead>
 <tbody>
+<?php if (empty($admissions)): ?>
+<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:#64748b">
+  <?php if (($filterSession ?? '') !== ''): ?>
+  No admissions found for session <?= e(session_short_label($filterSession)) ?>.
+  <?php else: ?>
+  No admissions found.
+  <?php endif; ?>
+</td></tr>
+<?php else: ?>
 <?php foreach ($admissions as $a): ?>
 <tr>
   <td><?= e(app_id($a['id'], $a['created_at'] ?? null, $a['session'] ?? null)) ?></td>
   <td><?= e($a['name']) ?></td>
   <td><?= e(format_mobile($a['mobile'] ?? '')) ?></td>
   <td><?= e($a['trade']) ?></td>
-  <td><?= e($a['session'] ?? '—') ?></td>
+  <td><?= e(session_short_label($a['session'] ?? '') ?: '—') ?></td>
   <td><?= e($a['student_credit_card'] ?? 'No') ?></td>
   <td><span class="badge badge-<?= strtolower($a['status']) ?>"><?= e($a['status']) ?></span></td>
   <td>
@@ -57,6 +90,7 @@
   </td>
 </tr>
 <?php endforeach; ?>
+<?php endif; ?>
 </tbody>
 </table>
 </div>

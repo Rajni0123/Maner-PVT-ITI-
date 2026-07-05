@@ -13,6 +13,14 @@ class AdminDashboardController
         Auth::require();
         ensure_contact_schema();
 
+        $session = admin_resolve_session_filter();
+        $sessionWhere = '';
+        $sessionParams = [];
+        if ($session !== '') {
+            $sessionWhere = ' AND session = ?';
+            $sessionParams = [$session];
+        }
+
         $totalSeats = 0;
         foreach (Database::fetchAll('SELECT seats FROM trades WHERE is_active = 1') as $trade) {
             $totalSeats += (int) preg_replace('/\D/', '', (string) ($trade['seats'] ?? '0'));
@@ -21,12 +29,32 @@ class AdminDashboardController
             $totalSeats = 60;
         }
 
-        $approved = (int) (Database::fetch('SELECT COUNT(*) c FROM admissions WHERE status = ?', ['Approved'])['c'] ?? 0);
-        $pending = (int) (Database::fetch('SELECT COUNT(*) c FROM admissions WHERE status = ?', ['Pending'])['c'] ?? 0);
-        $totalApplications = (int) (Database::fetch('SELECT COUNT(*) c FROM admissions')['c'] ?? 0);
-        $students = (int) (Database::fetch('SELECT COUNT(*) c FROM students WHERE status = ?', ['Active'])['c'] ?? 0);
+        $approved = (int) (Database::fetch(
+            'SELECT COUNT(*) c FROM admissions WHERE status = ?' . $sessionWhere,
+            array_merge(['Approved'], $sessionParams)
+        )['c'] ?? 0);
+        $pending = (int) (Database::fetch(
+            'SELECT COUNT(*) c FROM admissions WHERE status = ?' . $sessionWhere,
+            array_merge(['Pending'], $sessionParams)
+        )['c'] ?? 0);
+        $totalApplications = (int) (Database::fetch(
+            'SELECT COUNT(*) c FROM admissions WHERE 1=1' . $sessionWhere,
+            $sessionParams
+        )['c'] ?? 0);
+        $students = (int) (Database::fetch(
+            'SELECT COUNT(*) c FROM students WHERE status = ?' . $sessionWhere,
+            array_merge(['Active'], $sessionParams)
+        )['c'] ?? 0);
 
-        $feeRow = Database::fetch('SELECT COALESCE(SUM(amount), 0) total, COALESCE(SUM(paid_amount), 0) paid FROM student_fees');
+        if ($session !== '') {
+            $feeTotals = academic_session_fee_totals($session);
+            $feesPaid = $feeTotals['paid'];
+            $feesTotal = $feeTotals['total'];
+        } else {
+            $feeRow = Database::fetch('SELECT COALESCE(SUM(amount), 0) total, COALESCE(SUM(paid_amount), 0) paid FROM student_fees');
+            $feesPaid = (float) ($feeRow['paid'] ?? 0);
+            $feesTotal = (float) ($feeRow['total'] ?? 0);
+        }
 
         $unreadInquiries = (int) (Database::fetch('SELECT COUNT(*) c FROM contact WHERE is_read = 0')['c'] ?? 0);
         $inquiriesToday = (int) (Database::fetch('SELECT COUNT(*) c FROM contact WHERE DATE(created_at) = CURDATE()')['c'] ?? 0);
@@ -38,8 +66,8 @@ class AdminDashboardController
             $monthStart = date('Y-m-01 00:00:00', strtotime("-{$i} months"));
             $monthEnd = date('Y-m-t 23:59:59', strtotime("-{$i} months"));
             $count = (int) (Database::fetch(
-                'SELECT COUNT(*) c FROM admissions WHERE created_at >= ? AND created_at <= ?',
-                [$monthStart, $monthEnd]
+                'SELECT COUNT(*) c FROM admissions WHERE created_at >= ? AND created_at <= ?' . $sessionWhere,
+                array_merge([$monthStart, $monthEnd], $sessionParams)
             )['c'] ?? 0);
             $pipeline[] = [
                 'month_label' => date('M', strtotime($monthStart)),
@@ -47,9 +75,6 @@ class AdminDashboardController
             ];
             $pipelineMax = max($pipelineMax, $count);
         }
-
-        $feesPaid = (float) ($feeRow['paid'] ?? 0);
-        $feesTotal = (float) ($feeRow['total'] ?? 0);
 
         $stats = [
             'approved' => $approved,
@@ -70,9 +95,18 @@ class AdminDashboardController
             'SELECT id, name, email, phone, trade_interest, message, created_at, is_read
              FROM contact ORDER BY created_at DESC LIMIT 5'
         );
-        $recent = Database::fetchAll(
-            'SELECT id, name, trade, mobile, status, session, created_at FROM admissions ORDER BY created_at DESC LIMIT 6'
-        );
+
+        if ($session !== '') {
+            $recent = Database::fetchAll(
+                'SELECT id, name, trade, mobile, status, session, created_at
+                 FROM admissions WHERE session = ? ORDER BY created_at DESC LIMIT 6',
+                [$session]
+            );
+        } else {
+            $recent = Database::fetchAll(
+                'SELECT id, name, trade, mobile, status, session, created_at FROM admissions ORDER BY created_at DESC LIMIT 6'
+            );
+        }
 
         View::render('admin/dashboard', [
             'title' => 'Dashboard',
@@ -81,6 +115,8 @@ class AdminDashboardController
             'recentContacts' => $recentContacts,
             'pipeline' => $pipeline,
             'pipelineMax' => $pipelineMax,
+            'filterSession' => $session,
+            'sessions' => academic_session_options(),
         ], 'admin');
     }
 }

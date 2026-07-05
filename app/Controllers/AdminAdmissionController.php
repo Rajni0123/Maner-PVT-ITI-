@@ -13,6 +13,7 @@ class AdminAdmissionController
         Auth::require();
         $status = $_GET['status'] ?? '';
         $trade = $_GET['trade'] ?? '';
+        $session = admin_resolve_session_filter();
         $sql = 'SELECT * FROM admissions WHERE 1=1';
         $params = [];
         if ($status) {
@@ -23,6 +24,10 @@ class AdminAdmissionController
             $sql .= ' AND trade = ?';
             $params[] = $trade;
         }
+        if ($session !== '') {
+            $sql .= ' AND session = ?';
+            $params[] = $session;
+        }
         $sql .= ' ORDER BY created_at DESC LIMIT 200';
         $rows = Database::fetchAll($sql, $params);
         View::render('admin/admissions/index', [
@@ -30,6 +35,8 @@ class AdminAdmissionController
             'admissions' => $rows,
             'filterStatus' => $status,
             'filterTrade' => $trade,
+            'filterSession' => $session,
+            'sessions' => academic_session_options(),
         ], 'admin');
     }
 
