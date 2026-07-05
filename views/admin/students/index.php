@@ -33,10 +33,6 @@ require base_path('views/partials/admin-session-tabs.php');
       <?php endforeach; ?>
     </select>
   </div>
-  <div style="flex:1;min-width:200px">
-    <label>Search</label>
-    <input name="q" value="<?= e($q ?? '') ?>" placeholder="Name, mobile, enrollment, father...">
-  </div>
   <div>
     <label>Session</label>
     <select name="session">
@@ -45,6 +41,10 @@ require base_path('views/partials/admin-session-tabs.php');
       <option value="<?= e($sn) ?>" <?= ($filterSession ?? '') === $sn ? 'selected' : '' ?>><?= e(session_short_label($sn)) ?></option>
       <?php endforeach; ?>
     </select>
+  </div>
+  <div style="flex:1;min-width:200px">
+    <label>Search</label>
+    <input name="q" value="<?= e($q ?? '') ?>" placeholder="Name, mobile, enrollment, father...">
   </div>
   <button class="btn btn-sm btn-primary">Filter</button>
   <?php if (($filterSession ?? '') !== '' || ($filterStatus ?? '') !== '' || ($q ?? '') !== ''): ?>
