@@ -599,11 +599,24 @@ function academic_session_stats(): array
     return $stats;
 }
 
-/** Build query string preserving filters except session. */
-function admin_session_query(string $baseUrl, string $session = '', array $extra = []): string
+/** Build query string preserving filters; pass empty string for session to clear filter. */
+function admin_session_query(string $baseUrl, ?string $session = null, array $extra = []): string
 {
-    $params = array_filter(array_merge($extra, ['session' => $session]), static fn($v) => $v !== '' && $v !== null);
-    $qs = http_build_query($params);
+    $params = $extra;
+    if ($session !== null) {
+        $params['session'] = $session;
+    }
+    $filtered = [];
+    foreach ($params as $key => $value) {
+        if ($key === 'session') {
+            $filtered[$key] = $value;
+            continue;
+        }
+        if ($value !== '' && $value !== null) {
+            $filtered[$key] = $value;
+        }
+    }
+    $qs = http_build_query($filtered);
     return site_url($baseUrl . ($qs !== '' ? '?' . $qs : ''));
 }
 

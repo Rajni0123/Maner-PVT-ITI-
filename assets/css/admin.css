@@ -673,39 +673,109 @@ html[data-admin-theme="dark"] .admin-content .admin-session-pill-badge {
 
 .session-manage-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
-.session-manage-card {
+.admin-content .session-manage-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   border: 1px solid var(--admin-outline-variant);
   border-radius: var(--admin-radius-lg);
   background: var(--admin-surface-container-lowest);
-  padding: 1rem;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
-.session-manage-card h3 {
-  margin: 0 0 0.25rem;
-  font-size: 1.25rem;
+.admin-content .session-manage-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
-.session-manage-card .session-full-name {
-  margin: 0 0 0.75rem;
-  font-size: 0.8rem;
+.admin-content .session-manage-card h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
+}
+.admin-content .session-manage-card .session-full-name {
+  margin: 0;
+  font-size: 0.78rem;
   color: var(--admin-on-surface-variant);
 }
-.session-manage-stats {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 0.85rem;
-  font-size: 0.85rem;
+.admin-content .session-manage-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--admin-success-bg);
+  color: var(--admin-success-text);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.session-manage-stats strong {
+.admin-content .session-manage-badge-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.admin-content .session-manage-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.admin-content .session-manage-stats.has-pending {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.admin-content .session-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.65rem 0.5rem;
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-surface-container-low);
+  text-align: center;
+}
+.admin-content .session-stat-box-warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.admin-content .session-stat-value {
   display: block;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--admin-on-surface);
 }
-.session-manage-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.admin-content .session-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.admin-content .session-manage-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+.admin-content .session-manage-actions .btn {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+}
+@media (max-width: 420px) {
+  .admin-content .session-manage-actions {
+    grid-template-columns: 1fr;
+  }
+  .admin-content .session-manage-stats.has-pending {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ---- Login ---- */

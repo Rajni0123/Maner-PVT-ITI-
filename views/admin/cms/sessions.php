@@ -9,21 +9,30 @@
     $stat = $sessionStats[$sn] ?? ['students' => 0, 'admissions' => 0, 'pending' => 0];
   ?>
   <div class="session-manage-card">
-    <h3><?= e(session_short_label($sn)) ?></h3>
-    <p class="session-full-name"><?= e($sn) ?> · <?= e($s['start_year']) ?>–<?= e($s['end_year']) ?></p>
-    <div class="session-manage-stats">
+    <div class="session-manage-card-head">
       <div>
-        <span>Students</span>
-        <strong><?= (int) $stat['students'] ?></strong>
+        <h3><?= e(session_short_label($sn)) ?></h3>
+        <p class="session-full-name"><?= e($sn) ?> · <?= e($s['start_year']) ?>–<?= e($s['end_year']) ?></p>
       </div>
-      <div>
-        <span>Admissions</span>
-        <strong><?= (int) $stat['admissions'] ?></strong>
+      <?php if ($s['is_active']): ?>
+      <span class="session-manage-badge">Active</span>
+      <?php else: ?>
+      <span class="session-manage-badge session-manage-badge-inactive">Inactive</span>
+      <?php endif; ?>
+    </div>
+    <div class="session-manage-stats<?= (int) $stat['pending'] > 0 ? ' has-pending' : '' ?>">
+      <div class="session-stat-box">
+        <span class="session-stat-value"><?= (int) $stat['students'] ?></span>
+        <span class="session-stat-label">Students</span>
+      </div>
+      <div class="session-stat-box">
+        <span class="session-stat-value"><?= (int) $stat['admissions'] ?></span>
+        <span class="session-stat-label">Admissions</span>
       </div>
       <?php if ((int) $stat['pending'] > 0): ?>
-      <div>
-        <span>Pending</span>
-        <strong><?= (int) $stat['pending'] ?></strong>
+      <div class="session-stat-box session-stat-box-warn">
+        <span class="session-stat-value"><?= (int) $stat['pending'] ?></span>
+        <span class="session-stat-label">Pending</span>
       </div>
       <?php endif; ?>
     </div>
@@ -32,9 +41,6 @@
       <a href="<?= e(admin_session_query('admin/admissions', $sn)) ?>" class="btn btn-sm btn-secondary">Admissions</a>
       <a href="<?= e(admin_session_query('admin/fees/report', $sn)) ?>" class="btn btn-sm btn-outline">Fee Report</a>
     </div>
-    <?php if (!$s['is_active']): ?>
-    <p class="text-muted" style="margin:0.5rem 0 0;font-size:0.8rem">Inactive session</p>
-    <?php endif; ?>
   </div>
   <?php endforeach; ?>
 </div>
