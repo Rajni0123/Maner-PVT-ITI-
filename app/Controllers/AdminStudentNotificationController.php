@@ -14,6 +14,10 @@ class AdminStudentNotificationController
     public static function index(): void
     {
         Auth::require();
+        if (trim($_GET['section'] ?? '') === 'setup') {
+            self::setupForm();
+            return;
+        }
         $session = trim($_GET['session'] ?? '');
         $students = self::loadStudents($session);
         $settings = SiteData::settings();
@@ -94,7 +98,7 @@ class AdminStudentNotificationController
         }
 
         flash('success', 'Notification configuration saved.');
-        redirect('admin/notifications/setup');
+        redirect('admin/notifications?section=setup');
     }
 
     public static function send(): void
@@ -126,7 +130,7 @@ class AdminStudentNotificationController
         }
         if (($channel === 'sms' || $channel === 'both') && !Sms::isConfigured()) {
             flash('error', 'SMS gateway is not configured. Complete configuration first.');
-            redirect('admin/notifications/setup');
+            redirect('admin/notifications?section=setup');
         }
         if (($channel === 'sms' || $channel === 'both') && $smsBody === '') {
             flash('error', 'SMS message template is required.');

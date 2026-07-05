@@ -9,7 +9,7 @@ $notifyTab = $notifyTab ?? 'send';
     <span class="material-symbols-outlined">send</span>
     Send Notification
   </a>
-  <a href="<?= site_url('admin/notifications/setup') ?>" class="notify-tab<?= $notifyTab === 'setup' ? ' is-active' : '' ?>">
+  <a href="<?= site_url('admin/notifications?section=setup') ?>" class="notify-tab<?= $notifyTab === 'setup' ? ' is-active' : '' ?>">
     <span class="material-symbols-outlined">settings</span>
     Configuration
   </a>

@@ -116,6 +116,14 @@ if (preg_match('#^/admin/staff/salary/print/(\d+)$#', $uri, $m) && $method === '
     AdminStaffSalaryController::salaryPrint((int) $m[1]);
     exit;
 }
+if ($uri === '/admin/notifications/setup' && $method === 'GET') {
+    AdminStudentNotificationController::setupForm();
+    exit;
+}
+if ($uri === '/admin/notifications/setup' && $method === 'POST') {
+    AdminStudentNotificationController::setupSave();
+    exit;
+}
 
 $router = new Router();
 

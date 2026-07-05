@@ -14,7 +14,7 @@ if ($mailFromName === 'Maner Pvt ITI') {
     </p>
   </div>
   <div class="admin-page-actions">
-    <a href="<?= site_url('admin/notifications/setup') ?>" class="btn btn-outline btn-sm">Configuration</a>
+    <a href="<?= site_url('admin/notifications?section=setup') ?>" class="btn btn-outline btn-sm">Configuration</a>
   </div>
 </div>
 
@@ -25,7 +25,7 @@ if ($mailFromName === 'Maner Pvt ITI') {
 
 <?php if (empty($smsConfigured)): ?>
 <div class="admin-alert" style="margin-bottom:1rem">
-  SMS abhi configured nahi hai. <a href="<?= site_url('admin/notifications/setup') ?>">Configuration</a> se SMS gateway setup karein.
+  SMS abhi configured nahi hai. <a href="<?= site_url('admin/notifications?section=setup') ?>">Configuration</a> se SMS gateway setup karein.
 </div>
 <?php endif; ?>
 
