@@ -1,16 +1,28 @@
-<h2>Maner Private ITI</h2>
-<p class="login-sub">Admin Portal</p>
-<?php if ($msg = flash('error')): ?><div class="admin-alert admin-alert-error"><?= e($msg) ?></div><?php endif; ?>
-<form method="post" action="<?= site_url('admin/login') ?>">
+<div class="login-brand">
+  <div class="login-brand-icon">MP</div>
+  <h2>Maner Private ITI</h2>
+  <p class="login-sub">Admin Portal</p>
+</div>
+
+<?php if ($msg = flash('error')): ?>
+<div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
+<?php endif; ?>
+<?php if ($msg = flash('success')): ?>
+<div class="admin-alert admin-alert-success"><?= e($msg) ?></div>
+<?php endif; ?>
+
+<form method="post" action="<?= site_url('admin/login') ?>" class="login-form">
   <?= csrf_field() ?>
-  <label for="email">Email</label>
-  <input type="email" id="email" name="email" value="admin@iticollege.edu" required class="mb-4">
-  <label for="password">Password</label>
-  <input type="password" id="password" name="password" placeholder="Your install password" required>
-  <p class="login-hint">
-    Use email &amp; password from <strong>install.php</strong> step.<br>
-    Default: <code>admin@iticollege.edu</code> / <code>admin123</code><br>
-    Not working? Open <a href="<?= site_url('reset-admin.php') ?>" class="text-on-tertiary-container hover:underline">reset-admin.php</a>
-  </p>
-  <button type="submit" class="btn btn-secondary w-full">Login</button>
+  <div class="login-field">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<?= e($_POST['email'] ?? '') ?>" placeholder="admin@iticollege.edu" required autocomplete="username">
+  </div>
+  <div class="login-field">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+  </div>
+  <div class="login-form-actions">
+    <a href="<?= site_url('admin/forgot-password') ?>" class="login-forgot-link">Forgot password?</a>
+  </div>
+  <button type="submit" class="btn btn-primary login-submit">Login</button>
 </form>

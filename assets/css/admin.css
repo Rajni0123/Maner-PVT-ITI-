@@ -779,6 +779,12 @@ html[data-admin-theme="dark"] .admin-content .admin-session-pill-badge {
 }
 
 /* ---- Login ---- */
+.login-body {
+  margin: 0;
+  background: var(--admin-primary-container);
+  color: var(--admin-on-surface);
+}
+
 .login-wrap {
   min-height: 100vh;
   display: grid;
@@ -788,38 +794,135 @@ html[data-admin-theme="dark"] .admin-content .admin-session-pill-badge {
   background-size: 24px 24px;
   padding: 1.5rem;
 }
+
 .login-card {
   background: var(--admin-surface-container-lowest);
   border: 1px solid var(--admin-outline-variant);
-  border-top: 4px solid var(--admin-secondary-container);
+  border-top: 4px solid var(--admin-on-tertiary-container);
   padding: 2rem;
   border-radius: var(--admin-radius-lg);
   width: min(420px, 100%);
   box-shadow: var(--admin-shadow-hover);
 }
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-brand-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 0.85rem;
+  border-radius: 12px;
+  background: var(--admin-primary-container);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-family: var(--admin-font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+
 .login-card h2 {
   font-family: var(--admin-font-display);
-  font-size: 24px;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--admin-primary);
   text-align: center;
   margin: 0 0 0.35rem;
 }
+
 .login-card .login-sub {
   font-family: var(--admin-font-label);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--admin-secondary);
+  color: var(--admin-on-tertiary-container);
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin: 0;
 }
+
+.login-lead {
+  font-size: 0.85rem;
+  color: var(--admin-on-surface-variant);
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+  text-align: center;
+}
+
+.login-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-field label {
+  display: block;
+  font-family: var(--admin-font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--admin-primary);
+  margin-bottom: 0.35rem;
+}
+
+.login-field input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--admin-outline-variant);
+  border-radius: var(--admin-radius-lg);
+  background: var(--admin-surface-container-lowest);
+  color: var(--admin-on-surface);
+  font-family: var(--admin-font-body);
+  font-size: 0.92rem;
+  transition: border-color 0.2s;
+}
+
+.login-field input:focus {
+  outline: none;
+  border: 2px solid var(--admin-on-tertiary-container);
+}
+
+.login-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -0.25rem;
+}
+
+.login-forgot-link,
+.login-back-link a {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--admin-on-tertiary-container);
+  text-decoration: none;
+}
+
+.login-forgot-link:hover,
+.login-back-link a:hover {
+  text-decoration: underline;
+}
+
+.login-back-link {
+  margin: 1rem 0 0;
+  text-align: center;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.login-card .admin-alert {
+  margin-bottom: 1rem;
+}
+
 .login-card .login-hint {
   font-size: 0.8rem;
   color: var(--admin-on-surface-variant);
   margin: 0.5rem 0 1.25rem;
   line-height: 1.5;
 }
+
 .login-card .login-hint code {
   font-family: var(--admin-font-label);
   font-size: 0.75rem;

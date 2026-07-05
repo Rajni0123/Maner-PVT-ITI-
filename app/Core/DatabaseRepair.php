@@ -26,6 +26,7 @@ class DatabaseRepair
             Database::fetch('SELECT 1 FROM site_settings LIMIT 1');
             ensure_contact_schema();
             ensure_admission_fee_schema();
+            ensure_password_reset_schema();
             self::ensureStaffTablesQuiet();
             return;
         } catch (Throwable $e) {

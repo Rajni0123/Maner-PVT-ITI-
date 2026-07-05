@@ -146,6 +146,10 @@ $router->post('/apply-admission', fn() => AdmissionController::submit());
 // Admin auth
 $router->get('/admin/login', fn() => AdminAuthController::loginForm());
 $router->post('/admin/login', fn() => AdminAuthController::login());
+$router->get('/admin/forgot-password', fn() => AdminAuthController::forgotForm());
+$router->post('/admin/forgot-password', fn() => AdminAuthController::forgotSubmit());
+$router->get('/admin/reset-password', fn() => AdminAuthController::resetForm());
+$router->post('/admin/reset-password', fn() => AdminAuthController::resetSubmit());
 $router->get('/admin/logout', fn() => AdminAuthController::logout());
 $router->get('/admin/profile', fn() => AdminAuthController::profileForm());
 $router->post('/admin/profile', fn() => AdminAuthController::profileSave());

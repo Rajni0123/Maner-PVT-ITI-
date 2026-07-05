@@ -662,6 +662,29 @@ function academic_session_fee_totals(string $session): array
     return ['total' => $total, 'paid' => $paid, 'cnt' => $cnt];
 }
 
+function ensure_password_reset_schema(): void
+{
+    static $checked = false;
+    if ($checked) {
+        return;
+    }
+    $checked = true;
+
+    try {
+        \App\Core\Database::fetch('SELECT 1 FROM users LIMIT 1');
+    } catch (\Throwable $e) {
+        return;
+    }
+
+    if (!\App\Core\Database::fetch("SHOW COLUMNS FROM users LIKE 'password_reset_token'")) {
+        \App\Core\Database::connect()->exec(
+            'ALTER TABLE users
+             ADD COLUMN password_reset_token VARCHAR(64) NULL AFTER is_active,
+             ADD COLUMN password_reset_expires DATETIME NULL AFTER password_reset_token'
+        );
+    }
+}
+
 function ensure_admission_fee_schema(): void
 {
     static $checked = false;
