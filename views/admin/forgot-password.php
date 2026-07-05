@@ -1,8 +1,8 @@
-<div class="login-brand">
-  <div class="login-brand-icon">MP</div>
-  <h2>Forgot Password</h2>
-  <p class="login-sub">Reset via admin email</p>
-</div>
+<?php
+$brandTitle = 'Forgot Password';
+$brandSubtitle = 'Reset via admin email';
+require base_path('views/partials/login-brand.php');
+?>
 
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>

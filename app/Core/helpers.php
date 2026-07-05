@@ -241,6 +241,42 @@ function upload_url(?string $filename): string
     return site_url('uploads/' . basename(str_replace('\\', '/', $filename)));
 }
 
+function site_branding_file(string $key): string
+{
+    $file = trim((string) (\App\Models\SiteData::setting($key, '') ?: ''));
+    if ($file !== '' && upload_exists($file)) {
+        return $file;
+    }
+    return '';
+}
+
+function site_institute_logo_url(): string
+{
+    $file = site_branding_file('app_logo') ?: site_branding_file('site_favicon');
+    if ($file !== '') {
+        return upload_url($file);
+    }
+    return asset('icons/icon.svg');
+}
+
+function site_app_logo_url(): string
+{
+    return site_institute_logo_url();
+}
+
+function branding_mime_type(string $filename): string
+{
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    return match ($ext) {
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'webp' => 'image/webp',
+        'ico' => 'image/x-icon',
+        default => 'application/octet-stream',
+    };
+}
+
 function upload_exists(?string $filename): bool
 {
     return upload_resolve_path($filename) !== null;

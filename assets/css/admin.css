@@ -810,19 +810,13 @@ html[data-admin-theme="dark"] .admin-content .admin-session-pill-badge {
   margin-bottom: 1.5rem;
 }
 
-.login-brand-icon {
-  width: 52px;
-  height: 52px;
+.login-brand-logo {
+  width: 80px;
+  height: 80px;
   margin: 0 auto 0.85rem;
+  display: block;
+  object-fit: contain;
   border-radius: 12px;
-  background: var(--admin-primary-container);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-family: var(--admin-font-display);
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: 0.04em;
 }
 
 .login-card h2 {

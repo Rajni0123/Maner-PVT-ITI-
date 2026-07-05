@@ -1,14 +1,7 @@
-<div class="login-brand">
-  <div class="login-brand-icon">MP</div>
-  <h2>Maner Private ITI</h2>
-  <p class="login-sub">Admin Portal</p>
-</div>
+<?php require base_path('views/partials/login-brand.php'); ?>
 
 <?php if ($msg = flash('error')): ?>
 <div class="admin-alert admin-alert-error"><?= e($msg) ?></div>
-<?php endif; ?>
-<?php if ($msg = flash('success')): ?>
-<div class="admin-alert admin-alert-success"><?= e($msg) ?></div>
 <?php endif; ?>
 
 <form method="post" action="<?= site_url('admin/login') ?>" class="login-form">
