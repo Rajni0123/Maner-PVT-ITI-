@@ -8,12 +8,7 @@ $fillPct = (float) ($s['admission_fill_pct'] ?? 0);
 <div class="admin-page-header">
   <div>
     <h1>Dashboard</h1>
-    <p style="margin:0.35rem 0 0;font-size:0.9rem;color:var(--admin-on-surface-variant)">
-      <?= e(date('F Y')) ?> · live institute data
-      <?php if (($filterSession ?? '') !== ''): ?>
-      · Session <strong><?= e(session_short_label($filterSession)) ?></strong>
-      <?php endif; ?>
-    </p>
+    <p style="margin:0.35rem 0 0;font-size:0.9rem;color:var(--admin-on-surface-variant)"><?= e(date('F Y')) ?> · live institute data</p>
   </div>
   <div class="admin-page-actions">
     <a href="<?= site_url('admin/admissions/export') ?>" class="btn btn-primary btn-sm">

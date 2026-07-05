@@ -5,7 +5,7 @@
 $pageTitle = ($title ?? 'Admin') . ' | Maner Private ITI Admin';
 require base_path('views/partials/design-head.php');
 ?>
-<link rel="stylesheet" href="<?= asset('css/admin.css') ?>">
+<link rel="stylesheet" href="<?= asset('css/admin.css') ?>?v=<?= (int) @filemtime(base_path('assets/css/admin.css')) ?>">
 <script>
 (function () {
   var theme = localStorage.getItem('maner-admin-theme');
