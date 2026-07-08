@@ -18,7 +18,7 @@ if (empty($enquiryCategories)) {
     $enquiryCategories = ['Engineering' => 'Engineering'];
 }
 ?>
-<div id="enquiryPopup" class="enquiry-popup" hidden aria-hidden="true">
+<div id="enquiryPopup" class="enquiry-popup" hidden aria-hidden="true" style="display:none">
   <div class="enquiry-popup__backdrop" data-enquiry-close></div>
   <div class="enquiry-popup__dialog" role="dialog" aria-modal="true" aria-labelledby="enquiryPopupTitle">
     <div class="enquiry-popup__header">

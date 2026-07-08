@@ -142,10 +142,13 @@ body.enquiry-popup-open {
   position: fixed;
   inset: 0;
   z-index: 80;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 16px;
+}
+.enquiry-popup.is-open {
+  display: flex;
 }
 
 .enquiry-popup[hidden] {

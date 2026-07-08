@@ -29,6 +29,8 @@
 
   function openPopup() {
     popup.hidden = false;
+    popup.style.display = 'flex';
+    popup.classList.add('is-open');
     popup.setAttribute('aria-hidden', 'false');
     document.body.classList.add('enquiry-popup-open');
     var first = document.getElementById('enquiryName');
@@ -39,6 +41,8 @@
 
   function closePopup() {
     popup.hidden = true;
+    popup.classList.remove('is-open');
+    popup.style.display = 'none';
     popup.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('enquiry-popup-open');
     markSeen();

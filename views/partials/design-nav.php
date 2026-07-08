@@ -52,25 +52,6 @@ foreach ($primaryDefs as $def) {
     $usedPaths[] = $normalizeMenuPath((string) ($chosen['url'] ?? $def['url']));
 }
 
-$moreItems = [];
-foreach ($menus as $menu) {
-    $path = $normalizeMenuPath((string) ($menu['url'] ?? ''));
-    $isPrimary = false;
-    foreach ($primaryDefs as $def) {
-        foreach ($def['match'] as $m) {
-            $mNorm = $m === '' || $m === '/' ? '/' : strtolower(ltrim($m, '/'));
-            if ($path === $mNorm || ($mNorm !== '/' && str_starts_with($path, $mNorm))) {
-                $isPrimary = true;
-                break 2;
-            }
-        }
-    }
-    if ($isPrimary) {
-        continue;
-    }
-    $moreItems[] = $menu;
-}
-
 $navClass = static function (string $page) use ($navActive): string {
     if ($navActive === $page) {
         return 'text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md';
@@ -85,13 +66,6 @@ $mobileNavClass = static function (string $page) use ($navActive): string {
     return $base . ' text-on-surface-variant hover:text-primary';
 };
 $logoUrl = site_institute_logo_url();
-$moreActive = false;
-foreach ($moreItems as $menu) {
-    if (nav_key_from_menu_url((string) ($menu['url'] ?? '')) === $navActive) {
-        $moreActive = true;
-        break;
-    }
-}
 ?>
 <nav class="site-top-nav bg-surface sticky top-0 z-50 border-b border-outline-variant w-full" aria-label="Main">
   <div class="site-top-nav__bar flex justify-between items-center gap-4 px-gutter max-w-container-max mx-auto h-20 w-full">
@@ -107,21 +81,6 @@ foreach ($moreItems as $menu) {
       <a class="<?= $navClass($item['key']) ?> whitespace-nowrap" href="<?= e(menu_url((string) $item['url'])) ?>"><?= e($item['title']) ?></a>
       <?php endforeach; ?>
 
-      <?php if (!empty($moreItems)): ?>
-      <div class="site-nav-dropdown<?= $moreActive ? ' is-active' : '' ?>">
-        <button type="button" class="site-nav-dropdown__btn <?= $moreActive ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary' ?> font-body-md text-body-md" aria-expanded="false" aria-haspopup="true">
-          More
-          <span class="material-symbols-outlined site-nav-dropdown__chevron" aria-hidden="true">expand_more</span>
-        </button>
-        <div class="site-nav-dropdown__menu" role="menu" hidden>
-          <?php foreach ($moreItems as $menu): ?>
-          <?php $key = nav_key_from_menu_url((string) ($menu['url'] ?? '')); ?>
-          <a role="menuitem" class="site-nav-dropdown__item<?= $navActive === $key ? ' is-active' : '' ?>" href="<?= e(menu_url((string) ($menu['url'] ?? '/'))) ?>"><?= e($menu['title'] ?? '') ?></a>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <?php endif; ?>
-
       <a href="<?= site_url('apply-admission') ?>" class="bg-secondary-container text-on-secondary-container px-6 py-2.5 font-bold rounded-lg hover:opacity-90 transition-all active:scale-95 whitespace-nowrap">Apply Now</a>
     </div>
 
@@ -134,16 +93,6 @@ foreach ($moreItems as $menu) {
     <?php foreach ($primaryItems as $item): ?>
     <a class="<?= $mobileNavClass($item['key']) ?>" href="<?= e(menu_url((string) $item['url'])) ?>"><?= e($item['title']) ?></a>
     <?php endforeach; ?>
-
-    <?php if (!empty($moreItems)): ?>
-    <details class="site-nav-mobile-more"<?= $moreActive ? ' open' : '' ?>>
-      <summary class="px-4 py-3 font-body-md text-body-md font-semibold text-on-surface border-b border-outline-variant cursor-pointer">More links</summary>
-      <?php foreach ($moreItems as $menu): ?>
-      <?php $key = nav_key_from_menu_url((string) ($menu['url'] ?? '')); ?>
-      <a class="<?= $mobileNavClass($key) ?> pl-8" href="<?= e(menu_url((string) ($menu['url'] ?? '/'))) ?>"><?= e($menu['title'] ?? '') ?></a>
-      <?php endforeach; ?>
-    </details>
-    <?php endif; ?>
 
     <div class="p-4">
       <a href="<?= site_url('apply-admission') ?>" class="block text-center bg-secondary-container text-on-secondary-container px-6 py-3 font-bold rounded-lg hover:opacity-80 transition-all duration-200">Apply Now</a>
@@ -172,39 +121,5 @@ foreach ($moreItems as $menu) {
     });
   }
 
-  document.querySelectorAll('.site-nav-dropdown').forEach(function (wrap) {
-    var trigger = wrap.querySelector('.site-nav-dropdown__btn');
-    if (!trigger) return;
-    var menu = wrap.querySelector('.site-nav-dropdown__menu');
-    trigger.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      var willOpen = !wrap.classList.contains('is-open');
-      document.querySelectorAll('.site-nav-dropdown.is-open').forEach(function (other) {
-        other.classList.remove('is-open');
-        var ob = other.querySelector('.site-nav-dropdown__btn');
-        var om = other.querySelector('.site-nav-dropdown__menu');
-        if (ob) ob.setAttribute('aria-expanded', 'false');
-        if (om) om.setAttribute('hidden', '');
-      });
-      if (willOpen) {
-        wrap.classList.add('is-open');
-        trigger.setAttribute('aria-expanded', 'true');
-        if (menu) menu.removeAttribute('hidden');
-      } else if (menu) {
-        menu.setAttribute('hidden', '');
-      }
-    });
-  });
-
-  document.addEventListener('click', function () {
-    document.querySelectorAll('.site-nav-dropdown.is-open').forEach(function (wrap) {
-      wrap.classList.remove('is-open');
-      var b = wrap.querySelector('.site-nav-dropdown__btn');
-      var m = wrap.querySelector('.site-nav-dropdown__menu');
-      if (b) b.setAttribute('aria-expanded', 'false');
-      if (m) m.setAttribute('hidden', '');
-    });
-  });
 })();
 </script>
