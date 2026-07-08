@@ -51,7 +51,7 @@ nav {
     min-height: 56px;
   }
 
-  nav .site-mega-nav__brand-text,
+  nav .site-brand__text,
   nav .font-headline-md,
   nav a.font-headline-md {
     font-size: 1rem !important;
@@ -62,12 +62,12 @@ nav {
     white-space: nowrap !important;
   }
 
-  nav .site-mega-nav__logo {
+  nav .site-brand__logo {
     width: 32px;
     height: 32px;
   }
 
-  #siteNavToggle {
+  #mobileMenuToggle {
     width: 44px;
     height: 44px;
     display: inline-flex;
@@ -77,14 +77,14 @@ nav {
     -webkit-tap-highlight-color: transparent;
   }
 
-  #siteNavDrawer .site-mega-nav__drawer-nav {
+  #mobileMenuPanel {
     max-height: min(70vh, 520px);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  #siteNavDrawer a,
-  #siteNavDrawer summary {
+  #mobileMenuPanel a,
+  #mobileMenuPanel summary {
     min-height: 44px;
   }
 

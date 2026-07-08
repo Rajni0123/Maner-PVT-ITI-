@@ -38,7 +38,7 @@ $tradeDesign = [
 
 $pageTitle = $title ?? 'Courses | Maner Private ITI - Empowering Technical Careers';
 $extraCss = ['courses.css'];
-$navActive = 'trades';
+$navActive = 'courses';
 ?>
 <!DOCTYPE html>
 <html class="light" lang="en">

@@ -67,7 +67,7 @@ $pdfUrl = $pdf ? upload_url($pdf) : '';
 $pageTitle = $title ?? 'Fee Structure | Maner Private ITI';
 $pageDescription = 'Transparent fee structure for Electrician and Fitter trades at Maner Private ITI. Explore Bihar Student Credit Card (BSCC) benefits.';
 $extraCss = ['fee-structure.css'];
-$navActive = 'resources';
+$navActive = 'admission';
 ?>
 <!DOCTYPE html>
 <html class="scroll-smooth" lang="en">

@@ -47,7 +47,7 @@ $layout = $design['layout'] ?? 'classic';
 $pageTitle = ($trade['name'] ?? 'Trade') . ' Trade Syllabus | Maner Private ITI';
 $pageDescription = 'Explore the ' . ($trade['name'] ?? '') . ' trade syllabus, semester breakdown, and career pathways at Maner Private ITI.';
 $extraCss = ['trade-syllabus.css'];
-$navActive = 'trades';
+$navActive = 'courses';
 ?>
 <!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
