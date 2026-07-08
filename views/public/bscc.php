@@ -19,7 +19,7 @@ $docsImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuB1C6Qdlnsam2mj
 
 $pageTitle = $title ?? 'BSCC - Maner Private ITI | Study with Zero Upfront Cost';
 $extraCss = ['bscc.css'];
-$navActive = 'bscc';
+$navActive = 'student-zone';
 ?>
 <!DOCTYPE html>
 <html class="scroll-smooth" lang="en">

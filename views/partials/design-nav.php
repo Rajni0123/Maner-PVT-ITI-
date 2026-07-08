@@ -1,202 +1,139 @@
 <?php
+use App\Core\PublicNav;
+
 $header = $header ?? \App\Models\SiteData::header();
-$navActive = $navActive ?? '';
+$navActive = PublicNav::activeGroup($navActive ?? '');
+$menu = PublicNav::menu();
 $logoText = $header['logo_text'] ?? 'Maner Private ITI';
 if ($logoText === 'Maner Pvt ITI') {
     $logoText = 'Maner Private ITI';
 }
-$menus = \App\Models\SiteData::menus();
-$hiddenMenuUrls = ['results', '/results', 'faculty', '/faculty', 'infrastructure', '/infrastructure', 'gallery', '/gallery', 'apply-admission', '/apply-admission'];
-$menus = array_values(array_filter($menus, static function (array $menu) use ($hiddenMenuUrls): bool {
-    $url = ltrim((string) ($menu['url'] ?? ''), '/');
-    $normalized = $url === '' ? '/' : $url;
-    return !in_array($normalized, $hiddenMenuUrls, true) && !in_array('/' . $url, $hiddenMenuUrls, true);
-}));
-
-/** Home-style primary items — exact order, same as homepage header. */
-$primaryDefs = [
-    ['key' => 'home', 'title' => 'Home', 'url' => '/', 'match' => ['', '/', 'home']],
-    ['key' => 'courses', 'title' => 'Courses', 'url' => 'trades', 'match' => ['trades', 'courses']],
-    ['key' => 'admission', 'title' => 'Admission', 'url' => 'admission-process', 'match' => ['admission-process', 'admission', 'apply-admission']],
-    ['key' => 'bscc', 'title' => 'BSCC Info', 'url' => 'bscc-info', 'match' => ['bscc-info', 'bscc']],
-    ['key' => 'contact', 'title' => 'Contact', 'url' => 'contact', 'match' => ['contact']],
-];
-
-$normalizeMenuPath = static function (string $url): string {
-    if (preg_match('#^https?://#i', $url)) {
-        return strtolower(rtrim($url, '/'));
-    }
-    $path = ltrim(parse_url($url, PHP_URL_PATH) ?: $url, '/');
-    return strtolower($path === '' ? '/' : $path);
-};
-
-$usedPaths = [];
-$primaryItems = [];
-foreach ($primaryDefs as $def) {
-    $chosen = null;
-    foreach ($menus as $menu) {
-        $path = $normalizeMenuPath((string) ($menu['url'] ?? ''));
-        foreach ($def['match'] as $m) {
-            $mNorm = $m === '' || $m === '/' ? '/' : strtolower(ltrim($m, '/'));
-            if ($path === $mNorm || ($mNorm !== '/' && str_starts_with($path, $mNorm))) {
-                $chosen = $menu;
-                break 2;
-            }
-        }
-    }
-    $primaryItems[] = [
-        'key' => $def['key'],
-        'title' => $chosen['title'] ?? $def['title'],
-        'url' => $chosen['url'] ?? $def['url'],
-    ];
-    $usedPaths[] = $normalizeMenuPath((string) ($chosen['url'] ?? $def['url']));
-}
-
-$moreItems = [];
-foreach ($menus as $menu) {
-    $path = $normalizeMenuPath((string) ($menu['url'] ?? ''));
-    $isPrimary = false;
-    foreach ($primaryDefs as $def) {
-        foreach ($def['match'] as $m) {
-            $mNorm = $m === '' || $m === '/' ? '/' : strtolower(ltrim($m, '/'));
-            if ($path === $mNorm || ($mNorm !== '/' && str_starts_with($path, $mNorm))) {
-                $isPrimary = true;
-                break 2;
-            }
-        }
-    }
-    if ($isPrimary) {
-        continue;
-    }
-    $moreItems[] = $menu;
-}
-
-$navClass = static function (string $page) use ($navActive): string {
-    if ($navActive === $page) {
-        return 'text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md';
-    }
-    return 'text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md';
-};
-$mobileNavClass = static function (string $page) use ($navActive): string {
-    $base = 'block px-4 py-3 font-body-md text-body-md border-b border-outline-variant';
-    if ($navActive === $page) {
-        return $base . ' text-primary font-bold bg-surface-container-low';
-    }
-    return $base . ' text-on-surface-variant hover:text-primary';
-};
 $logoUrl = site_institute_logo_url();
-$moreActive = false;
-foreach ($moreItems as $menu) {
-    if (nav_key_from_menu_url((string) ($menu['url'] ?? '')) === $navActive) {
-        $moreActive = true;
-        break;
-    }
-}
 ?>
-<nav class="site-top-nav bg-surface sticky top-0 z-50 border-b border-outline-variant w-full" aria-label="Main">
-  <div class="site-top-nav__bar flex justify-between items-center gap-4 px-gutter max-w-container-max mx-auto h-20 w-full">
-    <a href="<?= site_url() ?>" class="site-brand flex items-center gap-2.5 min-w-0 flex-shrink-0 no-underline">
+<header class="site-mega-nav bg-surface sticky top-0 z-50 border-b border-outline-variant w-full" id="siteMegaNav">
+  <div class="site-mega-nav__bar flex items-center justify-between gap-4 px-gutter max-w-container-max mx-auto w-full">
+    <a href="<?= site_url() ?>" class="site-mega-nav__brand flex items-center gap-2.5 min-w-0 shrink-0 no-underline">
       <?php if ($logoUrl !== ''): ?>
-      <img src="<?= e($logoUrl) ?>" alt="" class="site-brand__logo" width="40" height="40" decoding="async">
+      <img src="<?= e($logoUrl) ?>" alt="" class="site-mega-nav__logo" width="40" height="40" decoding="async">
       <?php endif; ?>
-      <span class="site-brand__text font-headline-md text-headline-md font-bold text-primary"><?= e($logoText) ?></span>
+      <span class="site-mega-nav__brand-text font-headline-md font-bold text-primary"><?= e($logoText) ?></span>
     </a>
 
-    <div class="site-top-nav__desktop hidden md:flex items-center gap-6 lg:gap-8 flex-shrink-0">
-      <?php foreach ($primaryItems as $item): ?>
-      <a class="<?= $navClass($item['key']) ?> whitespace-nowrap" href="<?= e(menu_url((string) $item['url'])) ?>"><?= e($item['title']) ?></a>
-      <?php endforeach; ?>
+    <nav class="site-mega-nav__desktop hidden lg:flex items-center flex-1 justify-center min-w-0" aria-label="Primary">
+      <ul class="site-mega-nav__list" role="menubar">
+        <?php foreach ($menu as $item): ?>
+        <?php
+            $isActive = PublicNav::isItemActive($item, $navActive);
+            $type = (string) ($item['type'] ?? 'link');
+        ?>
+        <li class="site-mega-nav__item<?= $type === 'dropdown' ? ' site-mega-nav__item--dropdown' : '' ?><?= $isActive ? ' is-active' : '' ?>" role="none">
+          <?php if ($type === 'dropdown'): ?>
+          <button
+            type="button"
+            class="site-mega-nav__trigger<?= $isActive ? ' is-active' : '' ?>"
+            role="menuitem"
+            aria-haspopup="true"
+            aria-expanded="false"
+            data-nav-dropdown-trigger
+            data-nav-key="<?= e((string) ($item['key'] ?? '')) ?>"
+          >
+            <span><?= e((string) ($item['title'] ?? '')) ?></span>
+            <span class="material-symbols-outlined site-mega-nav__chevron" aria-hidden="true">expand_more</span>
+          </button>
+          <template data-nav-template="<?= e((string) ($item['key'] ?? '')) ?>">
+            <div class="site-mega-nav__panel-inner" role="menu">
+              <?php foreach ($item['items'] ?? [] as $child): ?>
+              <?php $childActive = PublicNav::isChildActive($child, $navActive); ?>
+              <a
+                role="menuitem"
+                class="site-mega-nav__panel-link<?= $childActive ? ' is-active' : '' ?>"
+                href="<?= e((string) ($child['url'] ?? '#')) ?>"
+                <?= !empty($child['external']) ? 'target="_blank" rel="noopener noreferrer"' : '' ?>
+              >
+                <span class="material-symbols-outlined site-mega-nav__panel-icon" aria-hidden="true"><?= e((string) ($child['icon'] ?? 'link')) ?></span>
+                <span><?= e((string) ($child['title'] ?? '')) ?></span>
+              </a>
+              <?php endforeach; ?>
+            </div>
+          </template>
+          <?php else: ?>
+          <a
+            class="site-mega-nav__link<?= $isActive ? ' is-active' : '' ?>"
+            role="menuitem"
+            href="<?= e((string) ($item['url'] ?? '#')) ?>"
+          >
+            <?= e((string) ($item['title'] ?? '')) ?>
+          </a>
+          <?php endif; ?>
+        </li>
+        <?php endforeach; ?>
+      </ul>
+    </nav>
 
-      <?php if (!empty($moreItems)): ?>
-      <div class="site-nav-dropdown<?= $moreActive ? ' is-active' : '' ?>">
-        <button type="button" class="site-nav-dropdown__btn <?= $moreActive ? 'text-primary font-bold border-b-2 border-primary pb-1' : 'text-on-surface-variant hover:text-primary' ?> font-body-md text-body-md" aria-expanded="false" aria-haspopup="true">
-          More
-          <span class="material-symbols-outlined site-nav-dropdown__chevron" aria-hidden="true">expand_more</span>
-        </button>
-        <div class="site-nav-dropdown__menu" role="menu">
-          <?php foreach ($moreItems as $menu): ?>
-          <?php $key = nav_key_from_menu_url((string) ($menu['url'] ?? '')); ?>
-          <a role="menuitem" class="site-nav-dropdown__item<?= $navActive === $key ? ' is-active' : '' ?>" href="<?= e(menu_url((string) ($menu['url'] ?? '/'))) ?>"><?= e($menu['title'] ?? '') ?></a>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <?php endif; ?>
-
-      <a href="<?= site_url('apply-admission') ?>" class="bg-secondary-container text-on-secondary-container px-6 py-2.5 font-bold rounded-lg hover:opacity-90 transition-all active:scale-95 whitespace-nowrap">Apply Now</a>
+    <div class="site-mega-nav__actions hidden lg:flex items-center gap-3 shrink-0">
+      <a href="<?= site_url('apply-admission') ?>" class="site-mega-nav__cta">Apply Now</a>
     </div>
 
-    <button type="button" id="mobileMenuToggle" class="md:hidden text-primary shrink-0" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenuPanel">
-      <span class="material-symbols-outlined" data-menu-icon>menu</span>
+    <button
+      type="button"
+      class="site-mega-nav__toggle lg:hidden"
+      id="siteNavToggle"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="siteNavDrawer"
+    >
+      <span class="material-symbols-outlined" data-nav-toggle-icon>menu</span>
     </button>
   </div>
 
-  <div id="mobileMenuPanel" class="site-top-nav__panel md:hidden border-t border-outline-variant bg-surface" hidden>
-    <?php foreach ($primaryItems as $item): ?>
-    <a class="<?= $mobileNavClass($item['key']) ?>" href="<?= e(menu_url((string) $item['url'])) ?>"><?= e($item['title']) ?></a>
-    <?php endforeach; ?>
-
-    <?php if (!empty($moreItems)): ?>
-    <details class="site-nav-mobile-more"<?= $moreActive ? ' open' : '' ?>>
-      <summary class="px-4 py-3 font-body-md text-body-md font-semibold text-on-surface border-b border-outline-variant cursor-pointer">More links</summary>
-      <?php foreach ($moreItems as $menu): ?>
-      <?php $key = nav_key_from_menu_url((string) ($menu['url'] ?? '')); ?>
-      <a class="<?= $mobileNavClass($key) ?> pl-8" href="<?= e(menu_url((string) ($menu['url'] ?? '/'))) ?>"><?= e($menu['title'] ?? '') ?></a>
-      <?php endforeach; ?>
-    </details>
-    <?php endif; ?>
-
-    <div class="p-4">
-      <a href="<?= site_url('apply-admission') ?>" class="block text-center bg-secondary-container text-on-secondary-container px-6 py-3 font-bold rounded-lg hover:opacity-80 transition-all duration-200">Apply Now</a>
+  <div class="site-mega-nav__drawer" id="siteNavDrawer" hidden>
+    <button type="button" class="site-mega-nav__drawer-backdrop" aria-label="Close menu" data-nav-drawer-close></button>
+    <div class="site-mega-nav__drawer-panel" role="dialog" aria-modal="true" aria-label="Navigation menu">
+      <div class="site-mega-nav__drawer-head">
+        <span class="font-headline-md font-bold text-primary">Menu</span>
+        <button type="button" class="site-mega-nav__drawer-close" aria-label="Close menu" data-nav-drawer-close>
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <nav class="site-mega-nav__drawer-nav" aria-label="Mobile">
+        <?php foreach ($menu as $item): ?>
+        <?php
+            $isActive = PublicNav::isItemActive($item, $navActive);
+            $type = (string) ($item['type'] ?? 'link');
+        ?>
+        <?php if ($type === 'dropdown'): ?>
+        <details class="site-mega-nav__accordion<?= $isActive ? ' is-active' : '' ?>"<?= $isActive ? ' open' : '' ?>>
+          <summary class="site-mega-nav__accordion-summary">
+            <span class="material-symbols-outlined" aria-hidden="true"><?= e((string) ($item['icon'] ?? 'folder')) ?></span>
+            <span><?= e((string) ($item['title'] ?? '')) ?></span>
+            <span class="material-symbols-outlined site-mega-nav__accordion-chevron" aria-hidden="true">expand_more</span>
+          </summary>
+          <div class="site-mega-nav__accordion-body">
+            <?php foreach ($item['items'] ?? [] as $child): ?>
+            <?php $childActive = PublicNav::isChildActive($child, $navActive); ?>
+            <a
+              class="site-mega-nav__drawer-link<?= $childActive ? ' is-active' : '' ?>"
+              href="<?= e((string) ($child['url'] ?? '#')) ?>"
+              <?= !empty($child['external']) ? 'target="_blank" rel="noopener noreferrer"' : '' ?>
+            >
+              <span class="material-symbols-outlined" aria-hidden="true"><?= e((string) ($child['icon'] ?? 'link')) ?></span>
+              <span><?= e((string) ($child['title'] ?? '')) ?></span>
+            </a>
+            <?php endforeach; ?>
+          </div>
+        </details>
+        <?php else: ?>
+        <a class="site-mega-nav__drawer-link site-mega-nav__drawer-link--top<?= $isActive ? ' is-active' : '' ?>" href="<?= e((string) ($item['url'] ?? '#')) ?>">
+          <span class="material-symbols-outlined" aria-hidden="true"><?= e((string) ($item['icon'] ?? 'link')) ?></span>
+          <span><?= e((string) ($item['title'] ?? '')) ?></span>
+        </a>
+        <?php endif; ?>
+        <?php endforeach; ?>
+      </nav>
+      <div class="site-mega-nav__drawer-footer">
+        <a href="<?= site_url('apply-admission') ?>" class="site-mega-nav__cta site-mega-nav__cta--block">Apply Now</a>
+      </div>
     </div>
   </div>
-</nav>
-<script>
-(function () {
-  var btn = document.getElementById('mobileMenuToggle');
-  var panel = document.getElementById('mobileMenuPanel');
-  if (btn && panel) {
-    var icon = btn.querySelector('[data-menu-icon]');
-    btn.addEventListener('click', function () {
-      var open = panel.hasAttribute('hidden');
-      if (open) {
-        panel.removeAttribute('hidden');
-        btn.setAttribute('aria-expanded', 'true');
-        btn.setAttribute('aria-label', 'Close menu');
-        if (icon) icon.textContent = 'close';
-      } else {
-        panel.setAttribute('hidden', '');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.setAttribute('aria-label', 'Open menu');
-        if (icon) icon.textContent = 'menu';
-      }
-    });
-  }
-
-  document.querySelectorAll('.site-nav-dropdown').forEach(function (wrap) {
-    var trigger = wrap.querySelector('.site-nav-dropdown__btn');
-    if (!trigger) return;
-    trigger.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      var willOpen = !wrap.classList.contains('is-open');
-      document.querySelectorAll('.site-nav-dropdown.is-open').forEach(function (other) {
-        other.classList.remove('is-open');
-        var ob = other.querySelector('.site-nav-dropdown__btn');
-        if (ob) ob.setAttribute('aria-expanded', 'false');
-      });
-      if (willOpen) {
-        wrap.classList.add('is-open');
-        trigger.setAttribute('aria-expanded', 'true');
-      }
-    });
-  });
-
-  document.addEventListener('click', function () {
-    document.querySelectorAll('.site-nav-dropdown.is-open').forEach(function (wrap) {
-      wrap.classList.remove('is-open');
-      var b = wrap.querySelector('.site-nav-dropdown__btn');
-      if (b) b.setAttribute('aria-expanded', 'false');
-    });
-  });
-})();
-</script>
+</header>
+<script src="<?= asset('js/site-nav.js') ?>?v=<?= (int) @filemtime(base_path('assets/js/site-nav.js')) ?>" defer></script>
