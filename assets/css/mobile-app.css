@@ -51,14 +51,20 @@ nav {
     min-height: 56px;
   }
 
+  nav .site-brand__text,
   nav .font-headline-md,
   nav a.font-headline-md {
     font-size: 1rem !important;
     line-height: 1.25 !important;
-    max-width: min(62vw, 220px);
+    max-width: none;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: nowrap !important;
+  }
+
+  nav .site-brand__logo {
+    width: 32px;
+    height: 32px;
   }
 
   #mobileMenuToggle {

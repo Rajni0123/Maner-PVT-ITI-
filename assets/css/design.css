@@ -2,6 +2,48 @@
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
+
+/* Public site header — brand stays on one line; links never crush logo */
+.site-top-nav__bar {
+  min-height: 4.5rem;
+}
+.site-brand {
+  max-width: min(48vw, 280px);
+}
+.site-brand__logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+.site-brand__text {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2 !important;
+  font-size: clamp(0.95rem, 1.6vw, 1.25rem) !important;
+}
+.site-top-nav__links {
+  scrollbar-width: thin;
+  -ms-overflow-style: none;
+}
+.site-top-nav__links::-webkit-scrollbar {
+  height: 0;
+}
+.site-top-nav__panel[hidden] {
+  display: none !important;
+}
+.site-top-nav__panel {
+  max-height: min(75vh, 560px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 1279px) {
+  .site-brand {
+    max-width: calc(100% - 3.5rem);
+  }
+}
 .ticker-scroll {
   animation: design-ticker 30s linear infinite;
 }
