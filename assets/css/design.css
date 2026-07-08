@@ -68,10 +68,14 @@
   transform: translateY(4px);
   transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
   z-index: 60;
+  display: block;
 }
-.site-nav-dropdown:hover .site-nav-dropdown__menu,
-.site-nav-dropdown:focus-within .site-nav-dropdown__menu,
-.site-nav-dropdown.is-open .site-nav-dropdown__menu {
+.site-nav-dropdown__menu[hidden] {
+  display: none !important;
+}
+.site-nav-dropdown:hover .site-nav-dropdown__menu:not([hidden]),
+.site-nav-dropdown:focus-within .site-nav-dropdown__menu:not([hidden]),
+.site-nav-dropdown.is-open .site-nav-dropdown__menu:not([hidden]) {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);

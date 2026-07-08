@@ -113,7 +113,7 @@ foreach ($moreItems as $menu) {
           More
           <span class="material-symbols-outlined site-nav-dropdown__chevron" aria-hidden="true">expand_more</span>
         </button>
-        <div class="site-nav-dropdown__menu" role="menu">
+        <div class="site-nav-dropdown__menu" role="menu" hidden>
           <?php foreach ($moreItems as $menu): ?>
           <?php $key = nav_key_from_menu_url((string) ($menu['url'] ?? '')); ?>
           <a role="menuitem" class="site-nav-dropdown__item<?= $navActive === $key ? ' is-active' : '' ?>" href="<?= e(menu_url((string) ($menu['url'] ?? '/'))) ?>"><?= e($menu['title'] ?? '') ?></a>
@@ -175,6 +175,7 @@ foreach ($moreItems as $menu) {
   document.querySelectorAll('.site-nav-dropdown').forEach(function (wrap) {
     var trigger = wrap.querySelector('.site-nav-dropdown__btn');
     if (!trigger) return;
+    var menu = wrap.querySelector('.site-nav-dropdown__menu');
     trigger.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -182,11 +183,16 @@ foreach ($moreItems as $menu) {
       document.querySelectorAll('.site-nav-dropdown.is-open').forEach(function (other) {
         other.classList.remove('is-open');
         var ob = other.querySelector('.site-nav-dropdown__btn');
+        var om = other.querySelector('.site-nav-dropdown__menu');
         if (ob) ob.setAttribute('aria-expanded', 'false');
+        if (om) om.setAttribute('hidden', '');
       });
       if (willOpen) {
         wrap.classList.add('is-open');
         trigger.setAttribute('aria-expanded', 'true');
+        if (menu) menu.removeAttribute('hidden');
+      } else if (menu) {
+        menu.setAttribute('hidden', '');
       }
     });
   });
@@ -195,7 +201,9 @@ foreach ($moreItems as $menu) {
     document.querySelectorAll('.site-nav-dropdown.is-open').forEach(function (wrap) {
       wrap.classList.remove('is-open');
       var b = wrap.querySelector('.site-nav-dropdown__btn');
+      var m = wrap.querySelector('.site-nav-dropdown__menu');
       if (b) b.setAttribute('aria-expanded', 'false');
+      if (m) m.setAttribute('hidden', '');
     });
   });
 })();
