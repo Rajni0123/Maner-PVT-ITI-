@@ -5,121 +5,27 @@ $logoText = $header['logo_text'] ?? 'Maner Private ITI';
 if ($logoText === 'Maner Pvt ITI') {
     $logoText = 'Maner Private ITI';
 }
-$menus = \App\Models\SiteData::menus();
-$hiddenMenuUrls = ['results', '/results', 'faculty', '/faculty', 'infrastructure', '/infrastructure', 'gallery', '/gallery', 'apply-admission', '/apply-admission'];
-$menus = array_values(array_filter($menus, static function (array $menu) use ($hiddenMenuUrls): bool {
-    $url = ltrim((string) ($menu['url'] ?? ''), '/');
-    $normalized = $url === '' ? '/' : $url;
-    return !in_array($normalized, $hiddenMenuUrls, true) && !in_array('/' . $url, $hiddenMenuUrls, true);
-}));
-
-/** Home-style primary items — exact order, same as homepage header. */
-$primaryDefs = [
-    ['key' => 'home', 'title' => 'Home', 'url' => '/', 'match' => ['', '/', 'home']],
-    ['key' => 'courses', 'title' => 'Courses', 'url' => 'trades', 'match' => ['trades', 'courses']],
-    ['key' => 'admission', 'title' => 'Admission', 'url' => 'admission-process', 'match' => ['admission-process', 'admission', 'apply-admission']],
-    ['key' => 'bscc', 'title' => 'BSCC Info', 'url' => 'bscc-info', 'match' => ['bscc-info', 'bscc']],
-    ['key' => 'contact', 'title' => 'Contact', 'url' => 'contact', 'match' => ['contact']],
-];
-
-$normalizeMenuPath = static function (string $url): string {
-    if (preg_match('#^https?://#i', $url)) {
-        return strtolower(rtrim($url, '/'));
+$isActive = static function (string $key) use ($navActive): string {
+    if ($key === $navActive) {
+        return 'text-primary font-bold border-b-2 border-primary pb-1';
     }
-    $path = ltrim(parse_url($url, PHP_URL_PATH) ?: $url, '/');
-    return strtolower($path === '' ? '/' : $path);
+    return 'text-on-surface-variant hover:text-primary transition-colors';
 };
-
-$usedPaths = [];
-$primaryItems = [];
-foreach ($primaryDefs as $def) {
-    $chosen = null;
-    foreach ($menus as $menu) {
-        $path = $normalizeMenuPath((string) ($menu['url'] ?? ''));
-        foreach ($def['match'] as $m) {
-            $mNorm = $m === '' || $m === '/' ? '/' : strtolower(ltrim($m, '/'));
-            if ($path === $mNorm || ($mNorm !== '/' && str_starts_with($path, $mNorm))) {
-                $chosen = $menu;
-                break 2;
-            }
-        }
-    }
-    $primaryItems[] = [
-        'key' => $def['key'],
-        'title' => $chosen['title'] ?? $def['title'],
-        'url' => $chosen['url'] ?? $def['url'],
-    ];
-    $usedPaths[] = $normalizeMenuPath((string) ($chosen['url'] ?? $def['url']));
-}
-
-$navClass = static function (string $page) use ($navActive): string {
-    if ($navActive === $page) {
-        return 'text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md';
-    }
-    return 'text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md';
-};
-$mobileNavClass = static function (string $page) use ($navActive): string {
-    $base = 'block px-4 py-3 font-body-md text-body-md border-b border-outline-variant';
-    if ($navActive === $page) {
-        return $base . ' text-primary font-bold bg-surface-container-low';
-    }
-    return $base . ' text-on-surface-variant hover:text-primary';
-};
-$logoUrl = site_institute_logo_url();
 ?>
-<nav class="site-top-nav bg-surface sticky top-0 z-50 border-b border-outline-variant w-full" aria-label="Main">
-  <div class="site-top-nav__bar flex justify-between items-center gap-4 px-gutter max-w-container-max mx-auto h-20 w-full">
-    <a href="<?= site_url() ?>" class="site-brand flex items-center gap-2.5 min-w-0 flex-shrink-0 no-underline">
-      <?php if ($logoUrl !== ''): ?>
-      <img src="<?= e($logoUrl) ?>" alt="" class="site-brand__logo" width="40" height="40" decoding="async">
-      <?php endif; ?>
-      <span class="site-brand__text font-headline-md text-headline-md font-bold text-primary"><?= e($logoText) ?></span>
+<header class="bg-surface sticky top-0 z-40 border-b border-outline-variant">
+  <div class="flex justify-between items-center px-gutter max-w-container-max mx-auto h-20 w-full">
+    <a href="<?= site_url() ?>" class="font-headline-md text-headline-md font-bold text-primary">
+      <?= e($logoText) ?>
     </a>
-
-    <div class="site-top-nav__desktop hidden md:flex items-center gap-6 lg:gap-8 flex-shrink-0">
-      <?php foreach ($primaryItems as $item): ?>
-      <a class="<?= $navClass($item['key']) ?> whitespace-nowrap" href="<?= e(menu_url((string) $item['url'])) ?>"><?= e($item['title']) ?></a>
-      <?php endforeach; ?>
-
-      <a href="<?= site_url('apply-admission') ?>" class="bg-secondary-container text-on-secondary-container px-6 py-2.5 font-bold rounded-lg hover:opacity-90 transition-all active:scale-95 whitespace-nowrap">Apply Now</a>
-    </div>
-
-    <button type="button" id="mobileMenuToggle" class="md:hidden text-primary shrink-0" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenuPanel">
-      <span class="material-symbols-outlined" data-menu-icon>menu</span>
-    </button>
+    <nav class="hidden md:flex items-center gap-8">
+      <a class="font-body-md text-body-md <?= $isActive('home') ?>" href="<?= site_url() ?>">Home</a>
+      <a class="font-body-md text-body-md <?= $isActive('courses') ?>" href="<?= site_url('trades') ?>">Trades</a>
+      <a class="font-body-md text-body-md <?= $isActive('admission') ?>" href="<?= site_url('admission-process') ?>">Admission</a>
+      <a class="font-body-md text-body-md <?= $isActive('bscc') ?>" href="<?= site_url('bscc-info') ?>">BSCC Info</a>
+      <a class="font-body-md text-body-md <?= $isActive('contact') ?>" href="<?= site_url('contact') ?>">Contact</a>
+    </nav>
+    <a href="<?= site_url('apply-admission') ?>" class="bg-secondary-container text-on-secondary-container px-6 py-2.5 font-bold rounded-lg hover:opacity-90 transition-all active:scale-95">
+      Apply Now
+    </a>
   </div>
-
-  <div id="mobileMenuPanel" class="site-top-nav__panel md:hidden border-t border-outline-variant bg-surface" hidden>
-    <?php foreach ($primaryItems as $item): ?>
-    <a class="<?= $mobileNavClass($item['key']) ?>" href="<?= e(menu_url((string) $item['url'])) ?>"><?= e($item['title']) ?></a>
-    <?php endforeach; ?>
-
-    <div class="p-4">
-      <a href="<?= site_url('apply-admission') ?>" class="block text-center bg-secondary-container text-on-secondary-container px-6 py-3 font-bold rounded-lg hover:opacity-80 transition-all duration-200">Apply Now</a>
-    </div>
-  </div>
-</nav>
-<script>
-(function () {
-  var btn = document.getElementById('mobileMenuToggle');
-  var panel = document.getElementById('mobileMenuPanel');
-  if (btn && panel) {
-    var icon = btn.querySelector('[data-menu-icon]');
-    btn.addEventListener('click', function () {
-      var open = panel.hasAttribute('hidden');
-      if (open) {
-        panel.removeAttribute('hidden');
-        btn.setAttribute('aria-expanded', 'true');
-        btn.setAttribute('aria-label', 'Close menu');
-        if (icon) icon.textContent = 'close';
-      } else {
-        panel.setAttribute('hidden', '');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.setAttribute('aria-label', 'Open menu');
-        if (icon) icon.textContent = 'menu';
-      }
-    });
-  }
-
-})();
-</script>
+</header>
