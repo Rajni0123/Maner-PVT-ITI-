@@ -11,7 +11,7 @@ class AdmissionController
 {
     public static function form(): void
     {
-        View::render('public/apply-admission', [
+        render_public('public/apply-admission', [
             'title' => 'Online Admission Portal 2026 | Maner Private ITI',
             'sessions' => SiteData::activeSessions(),
             'trades' => SiteData::activeTrades(),

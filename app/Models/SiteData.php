@@ -77,4 +77,21 @@ class SiteData
     {
         return Database::fetchAll('SELECT * FROM trades WHERE is_active = 1 ORDER BY name');
     }
+
+    /** @return list<array{key:string,label:string,description:string}> */
+    public static function availableTemplates(): array
+    {
+        return [
+            [
+                'key' => 'modern',
+                'label' => 'Modern (Current)',
+                'description' => 'Existing Maner design — navy/gold industrial look with Tailwind.',
+            ],
+            [
+                'key' => 'patna',
+                'label' => 'Classic ITI (Patna style)',
+                'description' => 'Patna ITI–style clone — top bar, ticker, notice board, multi-section homepage.',
+            ],
+        ];
+    }
 }

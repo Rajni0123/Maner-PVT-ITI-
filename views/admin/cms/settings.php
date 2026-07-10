@@ -2,6 +2,35 @@
 <form method="post" action="<?= site_url('admin/settings') ?>" enctype="multipart/form-data" class="card">
   <?= csrf_field() ?>
 
+  <?php
+    $activeTemplate = $settings['public_template'] ?? 'modern';
+    if (!in_array($activeTemplate, ['modern', 'patna'], true)) {
+        $activeTemplate = 'modern';
+    }
+    $templates = \App\Models\SiteData::availableTemplates();
+  ?>
+  <h3>Website Template</h3>
+  <p style="color:#64748b;margin:0 0 1rem;font-size:.95rem">Choose which public website design visitors see. Admin panel stays the same.</p>
+  <div class="template-picker" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-bottom:1.5rem">
+    <?php foreach ($templates as $tpl): ?>
+    <label style="display:block;border:2px solid <?= $activeTemplate === $tpl['key'] ? '#0f172a' : '#e2e8f0' ?>;border-radius:10px;padding:1rem 1.1rem;cursor:pointer;background:<?= $activeTemplate === $tpl['key'] ? '#f8fafc' : '#fff' ?>;transition:border-color .15s">
+      <div style="display:flex;align-items:flex-start;gap:.75rem">
+        <input type="radio" name="settings[public_template]" value="<?= e($tpl['key']) ?>" <?= $activeTemplate === $tpl['key'] ? 'checked' : '' ?> style="margin-top:.25rem">
+        <div>
+          <strong style="display:block;font-size:1.05rem"><?= e($tpl['label']) ?></strong>
+          <span style="display:block;color:#64748b;font-size:.9rem;margin-top:.35rem;line-height:1.45"><?= e($tpl['description']) ?></span>
+          <?php if ($activeTemplate === $tpl['key']): ?>
+          <span style="display:inline-block;margin-top:.6rem;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#0f172a;color:#fff;padding:.25rem .55rem;border-radius:4px">Active</span>
+          <?php endif; ?>
+        </div>
+      </div>
+    </label>
+    <?php endforeach; ?>
+  </div>
+  <p style="margin:0 0 1.5rem">
+    <a href="<?= site_url() ?>" target="_blank" rel="noopener">Preview public site ↗</a>
+  </p>
+
   <h3>Header</h3>
   <div class="form-grid">
     <div><label>Phone</label><input name="phone" value="<?= e($header['phone'] ?? '') ?>"></div>

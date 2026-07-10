@@ -11,7 +11,26 @@ class PublicController
     public static function home(): void
     {
         $settings = SiteData::settings();
-        View::render('public/home', [
+        $notices = [];
+        try {
+            $notices = Database::fetchAll('SELECT * FROM notices ORDER BY created_at DESC LIMIT 8');
+        } catch (\Throwable $e) {
+            $notices = [];
+        }
+        $faculty = [];
+        try {
+            $faculty = Database::fetchAll('SELECT * FROM faculty WHERE is_active = 1 ORDER BY is_principal DESC, display_order LIMIT 4');
+        } catch (\Throwable $e) {
+            $faculty = [];
+        }
+        $gallery = [];
+        try {
+            $gallery = Database::fetchAll('SELECT * FROM gallery ORDER BY created_at DESC LIMIT 8');
+        } catch (\Throwable $e) {
+            $gallery = [];
+        }
+
+        render_public('public/home', [
             'title' => $settings['seo_title'] ?? 'Maner Private ITI - Master Your Trade',
             'hero' => SiteData::hero(),
             'flashNews' => SiteData::flashNews(),
@@ -20,6 +39,9 @@ class PublicController
             'header' => SiteData::header(),
             'footer' => SiteData::footer(),
             'footerLinks' => SiteData::footerLinks(),
+            'notices' => $notices,
+            'faculty' => $faculty,
+            'gallery' => $gallery,
         ], '');
     }
 
@@ -30,7 +52,7 @@ class PublicController
         $gallery = Database::fetchAll(
             'SELECT * FROM gallery ORDER BY created_at DESC LIMIT 4'
         );
-        View::render('public/about', [
+        render_public('public/about', [
             'title' => 'About Us | Maner Private ITI',
             'page' => $page,
             'settings' => $settings,
@@ -43,7 +65,7 @@ class PublicController
 
     public static function trades(): void
     {
-        View::render('public/trades', [
+        render_public('public/trades', [
             'title' => 'Courses | Maner Private ITI - Empowering Technical Careers',
             'trades' => SiteData::activeTrades(),
             'header' => SiteData::header(),
@@ -54,7 +76,7 @@ class PublicController
 
     public static function bsccInfo(): void
     {
-        View::render('public/bscc', [
+        render_public('public/bscc', [
             'title' => 'BSCC - Maner Private ITI | Study with Zero Upfront Cost',
             'trades' => SiteData::activeTrades(),
             'header' => SiteData::header(),
@@ -71,14 +93,14 @@ class PublicController
             View::render('public/404', ['title' => 'Not Found'], '');
             return;
         }
-        if ($slug === 'fitter') {
+        if ($slug === 'fitter' && public_template_key() !== 'patna') {
             View::render('public/fitter-syllabus', [
                 'title' => 'Fitter Trade Syllabus | Maner Private ITI',
                 'syllabusPdf' => !empty($trade['syllabus_pdf']) ? upload_url($trade['syllabus_pdf']) : '',
             ], '');
             return;
         }
-        View::render('public/trade-detail', [
+        render_public('public/trade-detail', [
             'title' => $trade['name'] . ' Trade Syllabus | Maner Private ITI',
             'trade' => $trade,
             'trades' => SiteData::activeTrades(),
@@ -90,7 +112,7 @@ class PublicController
 
     public static function admissionProcess(): void
     {
-        View::render('public/admission-process', [
+        render_public('public/admission-process', [
             'title' => 'Requirements & Career Pathways | Maner Private ITI',
             'trades' => SiteData::activeTrades(),
             'header' => SiteData::header(),
@@ -109,7 +131,7 @@ class PublicController
                 $feeJson = $decoded;
             }
         }
-        View::render('public/fee-structure', [
+        render_public('public/fee-structure', [
             'title' => 'Fee Structure | Maner Private ITI',
             'pdf' => SiteData::setting('fee_structure_pdf'),
             'feeData' => $feeJson,
@@ -123,30 +145,30 @@ class PublicController
     public static function faculty(): void
     {
         $faculty = Database::fetchAll('SELECT * FROM faculty WHERE is_active = 1 ORDER BY is_principal DESC, display_order');
-        View::render('public/faculty', ['title' => 'Faculty', 'faculty' => $faculty]);
+        render_public('public/faculty', ['title' => 'Faculty', 'faculty' => $faculty], 'public');
     }
 
     public static function infrastructure(): void
     {
         $images = Database::fetchAll('SELECT * FROM gallery ORDER BY created_at DESC');
-        View::render('public/infrastructure', ['title' => 'Infrastructure', 'images' => $images]);
+        render_public('public/infrastructure', ['title' => 'Infrastructure', 'images' => $images], 'public');
     }
 
     public static function notices(): void
     {
         $notices = Database::fetchAll('SELECT * FROM notices ORDER BY created_at DESC');
-        View::render('public/notices', ['title' => 'Notice Board', 'notices' => $notices]);
+        render_public('public/notices', ['title' => 'Notice Board', 'notices' => $notices], 'public');
     }
 
     public static function results(): void
     {
         $results = Database::fetchAll('SELECT * FROM results ORDER BY created_at DESC');
-        View::render('public/results', ['title' => 'Results', 'results' => $results]);
+        render_public('public/results', ['title' => 'Results', 'results' => $results], 'public');
     }
 
     public static function contact(): void
     {
-        View::render('public/contact', [
+        render_public('public/contact', [
             'title' => 'Contact Us - Maner Private ITI',
             'trades' => SiteData::activeTrades(),
             'header' => SiteData::header(),

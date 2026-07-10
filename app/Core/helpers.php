@@ -277,6 +277,45 @@ function save_site_setting(string $key, string $value): void
     }
 }
 
+/** Active public website template: modern (current) | patna (Patna ITI clone) */
+function public_template_key(): string
+{
+    $key = strtolower(trim(\App\Models\SiteData::setting('public_template', 'modern')));
+    return in_array($key, ['modern', 'patna'], true) ? $key : 'modern';
+}
+
+/** Resolve view path for the active public template (falls back to modern if missing). */
+function public_view(string $view): string
+{
+    if (public_template_key() !== 'patna') {
+        return $view;
+    }
+    if (!str_starts_with($view, 'public/') || str_starts_with($view, 'public/patna/')) {
+        return $view;
+    }
+    $candidate = 'public/patna/' . substr($view, strlen('public/'));
+    if (is_file(base_path('views/' . $candidate . '.php'))) {
+        return $candidate;
+    }
+    return $view;
+}
+
+/** Layout for a public view under the active template. */
+function public_layout(string $view, string $modernLayout = ''): string
+{
+    $resolved = public_view($view);
+    if (str_starts_with($resolved, 'public/patna/')) {
+        return 'patna';
+    }
+    return $modernLayout;
+}
+
+/** Render a public page with the active template. */
+function render_public(string $view, array $data = [], string $modernLayout = ''): void
+{
+    \App\Core\View::render(public_view($view), $data, public_layout($view, $modernLayout));
+}
+
 function branding_mime_type(string $filename): string
 {
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));

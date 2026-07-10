@@ -179,6 +179,7 @@ class Security
     {
         return [
             'seo_title', 'seo_description', 'header_text', 'principal_name', 'principal_message', 'mis_code',
+            'public_template',
             'newsletter_enabled', 'newsletter_title', 'newsletter_placeholder',
             'storage_driver', 'r2_account_id', 'r2_access_key', 'r2_secret_key', 'r2_bucket',
             'r2_public_url', 'r2_prefix', 'r2_delete_local',

@@ -138,6 +138,7 @@ class DatabaseRepair
             ['seo_title', $logoText . ' - Technical Education Patna'],
             ['seo_description', 'Official website of ' . $logoText . ', Patna.'],
             ['mis_code', 'PR10001156'],
+            ['public_template', 'modern'],
         ];
         foreach ($settings as [$k, $v]) {
             $pdo->prepare('INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES (?,?)')->execute([$k, $v]);

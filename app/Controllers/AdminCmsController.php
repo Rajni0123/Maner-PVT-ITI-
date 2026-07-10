@@ -186,6 +186,9 @@ class AdminCmsController
         Auth::require();
         verify_csrf();
         foreach ($_POST['settings'] ?? [] as $key => $value) {
+            if ($key === 'public_template') {
+                $value = in_array($value, ['modern', 'patna'], true) ? $value : 'modern';
+            }
             $exists = Database::fetch('SELECT id FROM site_settings WHERE setting_key = ?', [$key]);
             if ($exists) {
                 Database::update('site_settings', ['setting_value' => $value], 'setting_key = ?', [$key]);
